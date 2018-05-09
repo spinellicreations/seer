@@ -1,0 +1,86 @@
+mod_openopc	
+---------------------------------------------------------------------
+# ... integrating the Python OpenOPC project to run HMI
+#     over Linux, BSD, Unix in an unfettered manner.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ mod_openopc(_2)
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli & J. Trembley for RS Automation, LLC
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved.
+ This is open software, released under GNU GPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the GPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/gpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+				
+					RS Automation, LLC
+				Email:	RickS@RSAutomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+THANKS...
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+
+Special thanks for this project are offered to the following:
+
+- Joe Richardson at Sorrento Buffalo
+	- http://www.sorrentocheese.com
+
+	... for making me learn a thing or two about OPC based HMI's
+
+- Barry B. and everyone at the OpenOPC for Python Project
+	- http://openopc.sourceforge.net
+	
+	... for making it possible to 'speak' OPC in a cross platform
+	    language.
+
+- Doug Hellman of Racemi, Inc and Python Magazine
+	- http://www.doughellman.com
+
+	... for talking about programming in h-u-m-a-n words, 
+	    and bringing tangible application examples to life
+	    in a way that allows others to 'understand' more
+	    than 'copy'.
+
+- Rick Stacey of RSAutomation
+	- http://www.rsautomation.net
+
+	... "we're the green berets.  no matter what somebody needs,
+	     we're the people that can do it."
+
+---------------------------------------------------------------------
+---------------------------------------------------------------------

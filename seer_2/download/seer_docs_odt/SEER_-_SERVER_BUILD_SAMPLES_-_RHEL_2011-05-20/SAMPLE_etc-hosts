@@ -1,0 +1,11 @@
+# /etc/hosts
+# wheeljack.lag.local
+# 2011_0520
+#
+# do not remove the following lines...
+127.0.0.1   wheeljack wheeljack.lag.local localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost6 localhost6.localdomain6
+
+
+127.0.0.1	dirge.lag.local dirge localhost.localdomain localhost
+::1		localhost6.localdomain6 localhost6

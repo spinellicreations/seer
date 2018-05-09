@@ -1,0 +1,100 @@
+A TRANSLATION (LANGUAGE FILE) FOR S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+Compatible with...
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 7 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ S.E.E.R. Language File Copyright (C) 2010, 2011, 2016
+ V. Spinelli for SpinelliCreations. This program comes 
+ with ABSOLUTELY NO WARRANTY. This is open code, released 
+ under Creative Commons 3.0 Share Alike, Unported License,
+ and you are welcome to redistribute it, with this tag 
+ in tact.
+	... http://www.spinellicreations.com
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author & Copyright Holder
+					SpinelliCreations
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+---------------------------------------------------------------------
+S.E.E.R. LANGUAGE FILE NOTE
+-- CHARACTER REPLACMENT
+---------------------------------------------------------------------
+
+When translating from one language to another, often times 'special'
+characters may be used.  S.E.E.R. pushes a default character set of
+UTF-8, which is more or less an English-Language friendly Latin
+character set.
+
+A lot of the common hyphons and what not need to be replaced.  This 
+is a list, which is accurate to date for the SPANISH and FRENCH 
+translations, and will obviously grow over time if other characters
+are encountered.
+
+CHARACTER TO REPLACE			REPLACE WITH
+--------------------			------------
+
+À					A
+Á					A
+Â					A
+Ã					A
+Ä					A
+È					E
+É					E
+Ê					E
+Ë					E
+Ì					I
+Í					I
+Î					I
+Ï					I
+Ñ					N
+Ò					O
+Ó					O
+Ô					O
+Õ					O
+Ö					O
+Ù					U
+Ú					U
+Û					U
+Ü					U
+Ý					Y
+à					a
+á					a
+â					a
+ã					a
+ä					a
+å					a
+è					e
+é					e
+ê					e
+ë					e
+ì					i
+í					i
+î					i
+ï					i
+ñ					n
+ò					o
+ó					o
+ô					o
+õ					o
+ö					o
+ù					u
+ú					u
+û					u
+ü					u
+ý					y
+ÿ					y
+Ŕ					R
+ŕ					r
+-----------------------------------------
+END OF FILE.

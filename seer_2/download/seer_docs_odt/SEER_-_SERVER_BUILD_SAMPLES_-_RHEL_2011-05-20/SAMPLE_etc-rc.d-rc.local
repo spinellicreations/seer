@@ -1,0 +1,96 @@
+#!/bin/sh
+#
+# /etc/rc.d/rc.local startup file
+# wheeljack.lag.local
+# 2011_0520
+#
+touch /var/lock/subsys/local
+#
+# ETHERNET - ADAPTER 1 ONLY
+echo ""
+echo "CUSTOM - BRINGING UP NETWORK"
+echo ""
+/sbin/ifconfig eth0 down
+/sbin/ifconfig eth0 10.1.1.100 netmask 255.255.255.0 up
+/sbin/route add default gw 10.1.1.1 eth0
+/sbin/ifconfig lo up
+#
+# DISABLE TSO OFFLOAD ('large frame offload')
+echo ""
+echo "CUSTOM - DISABLE LARGE FRAME OFFLOAD"
+echo ""
+/sbin/ethtool -K eth0 tso off
+#
+# CLOCK SYNC DAEMON
+echo ""
+echo "CUSTOM - START CLOCK SYNC DAEMON"
+echo ""
+# -- start only after ethernet has been brought online
+/bin/sleep 5
+/etc/init.d/ntpd start
+#
+# CLAMAV
+echo ""
+echo "CUSTOM - LAUNCH CLAM ANTIVIRUS"
+echo ""
+# -- daemon (also loads milter)
+/etc/init.d/clamav start
+# -- freshclam
+/usr/bin/freshclam --daemon
+#
+# SENDMAIL
+echo ""
+echo "CUSTOM - START SENDMAIL MAILER DAEMON"
+echo ""
+/etc/init.d/sendmail start
+#
+# LAUNCH VIRTUAL MACHINES
+echo ""
+echo "CUSTOM - LAUNCH VIRTUAL MACHINES (TYPICALLY HEADLESS)"
+echo ""
+/usr/bin/VBoxHeadless -v off -startvm yourguestOSname &
+#
+# MYSQL SERVER
+echo ""
+echo "CUSTOM - START MYSQL DB SERVER"
+echo ""
+/etc/init.d/mysqld start
+# END MYSQL SERVER
+#
+# HTTPD SERVER
+echo ""
+echo "CUSTOM - START APACHE WEB SERVER"
+echo ""
+/etc/init.d/httpd start
+# -- STaRBUC requires tape drives world access 
+echo ""
+echo "CUSTOM - SET PERMISSIONS ON MAGNETIC TAPE DRIVES FOR STARBUC"
+echo ""
+/bin/chmod 777 /dev/st0
+#
+# RUN AS A DEAD HEAD AND SERVE THE X WINDOW REMOTELY
+echo ""
+echo "CUSTOM - START VNC SERVER AND RUN AS HEADLESS SYSTEM"
+echo ""
+# NOTE - TigerVNC does not support the '-nohttpd' option #
+su wheeljack -c "/usr/bin/vncserver :0 -name wheeljack.lag.local -depth 24 -geometry 800x600"
+#
+# WAIT FOR VIRTUAL MACHINES TO FINISH BOOTING BEFORE WE GO ANY FURTHER
+echo ""
+echo "CUSTOM - WAITING 3 MINUTES TO ALLOW VIRTUAL MACHINES TO COMPLETE LOADING"
+echo "         BEFORE PROCEEDING."
+/bin/sleep 180
+#
+# FIRE UP MOD_OPENOPC ALL SUBROUTINES
+echo ""
+echo "CUSTOM - LAUNCHING MOD_OPENOPC AUTO_LAUNCH - FORK TO SUBROUTINES"
+echo ""
+/usr/bin/nohup /usr/bin/python /opt/mod_openopc_2/prog/mod_openopc.py AUTO_LAUNCH CONFIRM 2>/dev/null 1>/dev/null &
+# 
+# FIRE UP SYPHON ALL SUBROUTINES
+echo ""
+echo "CUSTOM - LAUNCHING SYPHON AUTO_LAUNCH - FORK TO SUBROUTINES"
+echo ""
+/usr/bin/nohup /usr/bin/python /opt/syphon/prog/syphon.py AUTO_LAUNCH CONFIRM 2>/dev/null 1>/dev/null &
+#
+# END OF FILE

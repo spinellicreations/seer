@@ -1,0 +1,558 @@
+S.E.E.R. (incl. W.A.R.R.I.O.R.)
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+REVISION HISTORY
+
+ENTRY	NAME		V		REV	NOTES
+-----	----		-		---	-----
+
+0	S.E.E.R.	0.0 - 3.x	n/a	All copies and information lost due
+						to data storage failure and lack
+						of backups (ya, that's what I said).
+
+1	S.E.E.R. 2	4.0		n/a	Based wholly on a few principles:
+							- integration with mod_openopc
+							- built for and with:
+								apache 2+
+								php5+
+								mysql 5+
+								mod_openopc_2 3+
+							- the previous S.E.E.R. which
+							  took much of its structure
+							  and php / sql i/o functionality
+							  from existing SpinelliCreations
+							  and / or SorrentoLactalis work.
+
+						Version codename is: Brahma Bull
+							- much an angry reaction
+							  to negligence which lead up
+							  to the destruction of the first
+							  S.E.E.R.
+							- indicates a strong dominance
+							  and superiority (with regard to
+							  ability of customization and
+							  functionality) within the field.
+							- shal be retained through the
+							  the 4.x-x series of builds.
+
+						The idea here is to have an even more
+						generalized skeleton system that is
+						eaiser to deploy than the previous, not
+						that the previous was bad (had we not 
+						lost it, we would have never considered
+						rebuilding, but, since we have to anyway,
+						might as well apply what we've learned...)
+
+2	S.E.E.R. 2	4.19		n/a	PRE-Release, missing language files and 
+	SVN_SNAPSHOT_2010_0524			documentation.  Otherwise, complete.
+
+3	S.E.E.R. 2	4.19		1	bugfix for above, SPFMODEL Production
+	SVN_SNAPSHOT_2010_0614			Analysis Report was missing detail 
+						rundown for section "Pick up straggler
+						records".
+
+4	S.E.E.R. 2	4.20		n/a	cleanup of prerelease... daylight savings time
+						warning is now in bold red instead of page
+						font / color to be more noticeable, temperature
+						charts with black filler (fix for IE fucking up
+						table cell widths with background images having
+						superimposed graphics) changed to white filler
+						(looks better, more like it's not a 'fix' and
+						'should' be that way), csv's cleaned up to be
+						more like the actual reports themselves.
+
+5	S.E.E.R. 2	4.20		1	cleanup is complete and also added an export
+						age sanity check.  In the event a user closes
+						their browser after viewing an export, without
+						first navigating to another page, then the export
+						is orphaned.  Orphans are auto-checked for each
+						time subsequent exports are run by any user...
+						if orphans are found and are more than 1 hour old,
+						then they are deleted automagically.  
+
+6	S.E.E.R. 2	4.30		n/a	authoring of the W.A.R.R.I.O.R. module for
+						Overall Equipment Efficiency, in line with what
+						is detailed by Wikipedia on the topic.
+						-- Workplace Authenticated Resource Runtime
+							Input and Output Report.
+						Determined that the reason the 'heavy analysis' 
+						reports (like Tankmodel Occupancy Report) take
+						such a very long time is not anything to do with
+						php's array cycling functionality (as was previously
+						thought to be the limiting factor), but rather with
+						disk-to-memory I/O.  For example, you can run a
+						MySQL examine query, which will tell you how long
+						the database takes to determine what you want, put
+						it in the right order, and get ready to actually
+						send you the data... that happens almost instantly
+						(less than 5 seconds on even the most brutal queries)
+						but then if you run the same query from the sql 
+						console without the 'explain' flag (thus making it
+						throw all that data up on the terminal screen)
+						it can take 3, 4, 5 or more minutes depending on
+						the query.  To further back it up, if you only
+						select one or two fields instead of all columns, 
+						the response time scales perfectly... 
+							response = (col selected / total cols) * (total col query time)
+						So what's the fix?  Really isn't one... it's not broken.
+						To help though (and its helped a lot), went through all
+						of the reports and hmi's and determined exactly what
+						columns are needed for each query, then set to select
+						only those... there are very few "select *" statements
+						left, and those are only where all columns are used.
+						If you want better performance, then you've got to
+						increase the minimum hardware specification.
+						-- key hardware pieces are as follows:
+						-- -- System Memory Size (go up to 64 GB and increase
+								innodb memory size from 18 to 40 in my.conf)
+						-- -- Processor Speed (go up to 4 dual core Santa Ana/Rosa 
+								Opterons at 3.2 GHz or two W5590 Xeon at
+								3.3 GHz.
+						
+						
+
+7	S.E.E.R. 2	4.31		n/a	WARRIOR module is complete.  I imagine sorrento and
+						LAG IT are going to want a custom schedule updater for
+						WARRIOR to integrate with their new labeling system,
+						which is all fine and well, but that'll come later,
+						the module itself is done.  The CheckWeigher Model is
+						also done.  syphon was upgraded to include a new 
+						subroutine specifically to dump scale data into a
+						mod_openopc database for use with SEER and the 
+						CheckWeigher model.
+						-- THIS VERSION SHALL BE A PUBLIC PRE-RELEASE ALSO.
+
+8	S.E.E.R. 2	4.32		n/a	ATMOSPHERIC model complete for display and logging
+						of temperature / humidity / atmospheric pressure of
+						a given environmental zone.
+
+9	S.E.E.R. 2	4.33		n/a	Training Portal / Documents / etc. stripped from SEER.
+						The ultimate purpose of SEER does not need these items.
+						I felt we were getting out of the scope of the package,
+						and trying to tackle something different.  So it's gone
+						as of 4.33 (2010-11-16).
+
+10	S.E.E.R. 2	4.34		n/a	apparently MSIE-6 throws a problem at us.  The php
+						header instruction 'refresh' is unavailable until
+						MSIE-7, and since we are trying to go as far back
+						as 6 compatability, we will have to re-use the
+						deprecated META REFRESH tags instead of the more 
+						elegant and semi-standard php header 'refresh', actually,
+						we'll end up with an option to use either-or-both.
+						added level in percent (display, not plot) and product name
+						to the TANKMODEL REPORT 1 - TEMPERATURE CHART report page.
+
+11	S.E.E.R. 2	4.34		1	added SCHEDULE NUMBER, PACKAGE CLASS, JOB DESCRIPTION, and
+						OPERATOR OR TRADESMAN to the WARRIOR OEE/TEEP report for
+						clarity.
+
+12	S.E.E.R. 2	4.34		2	'no-peeking' subdirectory auto-redirect to primary index
+						used the php header 'refresh' method -- changed to php
+						header 'location' method which is fully standardized across
+						browsers.
+
+13	S.E.E.R. 2	4.34		3	bugfixes for the runaway decimal point in checkweigher report 0,
+						rounding error reduced to 0.01% for standard deviation plots,
+						same done for atmospheric model std dev plots.  warrior report 2
+						uses a header now for indicating user / product / schedule / etc.
+						being run on a line when a group of errors occur, which are 
+						displayed based upon duration and the detail level requested
+						by the user.
+
+14	S.E.E.R. 2	4.35		n/a	massive consolidation of scripts - pulled all of the HMI and
+						REPORT scripts out, added traffic_cop_option_negotiation to
+						handle it all and direct immediately to the BODY portions.
+						Pulled all of the createdb scripts out and replaced them
+						with mod_openopc_setup_createdb_negotiation to work in
+						conjunction with model advanced_options files.  All model
+						actions moved to ./include/core_models so as to keep the frame
+						work separate from the model actions.
+
+						What is left is to clean up the model actions / scripts themselves
+						and make sure that they pretty print.  The outer framework is
+						already checked and assured to pretty print and as far as I can
+						tell it is sound (and now consolidated).
+
+15	S.E.E.R. 2	4.35		1	bugfix for 4.35 - once 'restrict by department' functionality 
+						was added, maintenance department members (who we want to
+						view everything, were also restricted... woops!)  fixed this
+						by adding declaration to global options file of "what term
+						is used for the name of your maintenance dept".
+
+						checkweigher model had some tags missing on report 0 (analysis)
+						specifically for taking the percentage of the giveaway/takeaway
+						and putting it next to the mass - the calculation was there
+						but it displayed only on the last record not all records.
+
+16	S.E.E.R. 2	4.36		n/a	checkweigher model upgraded to version 2 (codename Leda),
+						and set to include the machine operator in both the live
+						hmi's and the historical reports.  note, this required an
+						update to syphon (so as of s.e.e.r. 4.36 - build 16, syphon
+						version 0.1-6 is required).
+
+17	S.E.E.R. 2	4.37		RC1	continue the fuctional subroutine port of everything that didn't
+						get pushed in the last cleanup... which means all of the core 
+						model stuff.  also fixed an issue with table display alignment
+						on the system info page.  settings page finally makes some 
+						sense, and it functions properly.  tons of html formatting
+						cleanup to force 'pretty print' of exported markup to browsers.
+						all forms now proper, and all generated pages validate with
+						the w3c validation checker for html 4.01 transitional.  
+						consolidated a lot of model functions into just that - functions,
+						rather than having them repeated in printed code.  functions
+						common to multiple models are shared, and all reports / hmi's 
+						share common structure, user input methods, and such, lending
+						to a more refined feel.  the main improvement is the ability
+						to perform global changes - as roughly 60% of the model codebase
+						is now shared functions.  this will also lend itself to ease
+						of adding more models in the future, as the bulk of the work
+						is already done, and you can just call little functions 
+						to do what you need.
+
+						And - FINALLY - stripped the Lactalis branding out of it, and
+						it a GNU Licensed image (the SEER Logo without any proprietary
+						art) for the default image / created a default globaloptions_seer_0
+						file that does not include any proprietary information.
+
+						note - this is the first non-subversion (completed,
+						       as in 'ready for prime time') public release.
+
+18	S.E.E.R. 2	4.37		RC2	fixes since RC1...
+							-- addusers insertion query syntax error
+							-- removeusers results display poorly formatted
+							-- settings page would throw query fault due to 
+							   model queries for CHECKWEIGHER and WARRIOR on initial
+							   setup (first run) because their interaction tables did
+							   not yet exist.
+							-- WARRIOR schedule table population failed due to 
+							   missing variable declaration in core_user_active_or_dead()
+							   function.
+							ALL OF THE ABOVE ARE REPAIRED
+
+19	S.E.E.R. 2	1.4.37		RC2	little bit of documentation tidy-up, bugfixes to WARRIOR report 2
+						and massive improvements to report 0, 1, and 2 overall.  
+
+20	S.E.E.R. 2	1.4.37		RC3	added integration for a labeling plugin to be used (we wrote the
+						lactalis_bartender_labeling_plugin which is proprietary and will
+						not be included in SEER releases, however the principles behind it
+						as far as 'where it injects itself into the basecode' and 'where it
+						needs to show up in the hmi screens' would be similar for any label
+						application seeking integration with SEER (WARRIOR).  so that's in
+						there.
+
+21	S.E.E.R. 2	1.4.37		RC4	appearance fix for WARRIOR report[0] and some addition of option
+						for 'SLOW BOUNCEBACK' in globaloptions_WARRIOR_0, to allow syncing
+						the SLOW_BOUNCEBACK time in seconds to the mod_openopc READ routine
+						scantime.  added WARRIOR operatior guide, along with Allen Bradley
+						PLC logic file templates for the WARRIOR module in both Controllogix
+						and SLC / uLogix format.
+
+22	S.E.E.R. 2	1.4.37		FINAL	final tweaks and such.
+						-- bugfix to WARRIOR report 2 (downtime analysis) where individual
+						machine instances of run / down / or scheduled down which had 
+						already been sorted by critical points (primarily job / schedule / 
+						package_class / operator / etc...) were now being re-evaluated and
+						'chopped' because of this re-evaluation.  Problem was using the 
+						same 'scrutinize_history' function that used to be (and I believe
+						still is) a part of the hmi_0 machine_control page.  In that
+						instance, we want to truncate history based on these minor changes.
+						However, for our overall report, we do NOT want to do this - as, 
+						stated already, it's pre-sorted.
+						-- some more little stuff to make sure labeling_system plugins
+						work properly.
+						-- creation of the THINCHART module for quick-and-easy replacement
+						of standard 3 pen + 1 event pen circular chart recorders with
+						SEER monitoring.
+
+23	S.E.E.R. 2	1.4.37		FINAL	added ability to execute plugins in 3 areas... the html header,
+						prior to main body processing, and in post-processing (after
+						all markup is generated, allowing you to modify that markup).
+						-- misc. other cleanup.
+						-- license cleanup.
+
+						v.1.4.37 FINAL --- DONE!
+
+
+	-----------------------------------------------------------------
+	-----------------------------------------------------------------
+	NOTE
+	-----------------------------------------------------------------
+	-----------------------------------------------------------------
+	1.4.37 FINAL (build 23) is the first 'Long Term Stability' public
+	release, and is a freeze of the 1.4 series.
+	-----------------------------------------------------------------
+	-----------------------------------------------------------------
+
+
+24	S.E.E.R. 2	1.5.0		n/a	added user browser (browser name / engine id / and version id)
+						to the base system, and now it'll show up on at the top of the
+						page.  allows plugins or anything else to do some 'engine-based'
+						tricks in order to ensure proper operation.  this is not intended
+						to be used at the 'browser name' or 'version number' level, as
+						that is too finnicky and we like broad reaching cross compatability,
+						but some minor tweaks based on engine is understandable.
+						
+24.5	S.E.E.R. 2	1.5.1		n/a	added display of active THEME and active PLUGINS to the top of
+						the page where 'active user' / 'browser info' and other stuff is.
+
+						added absolute path appending to the front of auto-refresh
+						uri's on the local server which are absolute or relative to the
+						server, rather than whole 'http://such-and-such.....' requests.
+						this will aid in ensuring compatability with the instruction.
+
+						fixed potential issue - when ceritfying records (for any model),
+						the user 'comment' was not sanitized.  the result was that the
+						use could push back " ' ", " \ ", or other potentially nefarious
+						characters in their comment, resulting in failure to update
+						the records.  value is now sanitized.
+
+						added some language entries for labeling plugins and for
+						static "auto" and "manual"
+
+						fixed small but 'effectively massive' bug in WARRIOR - the 
+						ability to run reports against just a certain 'shift', or over
+						just the selected hours of a series of days - that ability 
+						creates a hole that has to be dealt with.  to do so, individual
+						run instances are identified, separated, and then put back
+						together (in a manner of speaking, after the non-desired time
+						frames are removed), and then all the calculations begin. a while
+						back, there was a fix to report 01 and 02 to address this, but it was
+						not typed properly into report 00.  it has now been fixed on report
+						00 too.
+
+						added ability to turn 'on' or 'off' labeling plugin integration
+						on a per-local-options group basis.  for example, you can globally
+						enable labeling plugin integration, and then turn it 'on' for
+						items in warrior local options group 0, 1, and 4 - but also have it
+						turned off for items in local options group 2 and 3 - yielding
+						greater overall system flexibility.
+
+						functionalized a 'fudged' version of mod_openopc_write_declared, to
+						allow in-stream creation of daemon event files.
+
+25	S.E.E.R. 2	1.5.2		n/a	added generic backdrop / framework screen... this can be used
+						to display new_target_window links that do not require navitation
+						away from the user's current control page.  rather, the user can
+						press a link, and open a pop up (well, a new window actually, or
+						depending on browser it may show up as a new tab) that will 
+						have a generic seer header and footer, along with whatever
+						dynamic content is sent to the body.  this is ideal for things
+						such as "click here to view LARGE image" or "click here to view
+						the graph in LARGE size" - where just the content is displayed,
+						and no other control is granted.  the user is then expected to
+						close the pop up (other window / tab) and return to regular 
+						control page to proceed further on.
+
+						This new feature is called "PopUP Canvas", and its first 
+						application has been to all Gantt Charts.  These now display
+						in reports with a button to show the PopUP Canvas for Precision
+						Viewing at a window size of around 2500 pixels (in comparison to
+						normal 900 pixel constraint).  This results in effectively a 
+						500% scale factor for the Gantt chart itself.
+
+						Added functionality to the datestampAddtime function... it now
+						supports the adding of 'seconds' (so resolution for addition is
+						down to the second, not just the minute).
+
+						Added export functionality for PDF files.  Now, any report from
+						the "Reporting" Tab can be exported as an exact copy in PDF
+						format for uncontrolled document archival or sharing.
+
+						---- ya, that whole PDF thing - it works great - but wayyyy
+						more work that I thought it would be.  Fkin' eh!
+
+26	S.E.E.R. 2	1.5.2		a	added support for server-supplied fonts via CSS.  This gets
+						rid of any issue with layout or text width in just about every
+						modern browser.  The CSS implementation is far from ideal, but
+						until open web fonts gain wide use, it does fall in line with
+						what is the accepted practice currently.  Support for Trident,
+						WebKit, Mozilla, Presto, and KDE engines is present.  Also
+						fixes issue from 1.5.2 (build 25) where PDF's would print with
+						sometimes screwed up text being cut off at ends of cells (due to
+						WebKit browser not using 'ideal' font, which now we just push
+						the font we want).
+
+27	S.E.E.R. 2	1.5.2		b	bugfix for the tele-hack-ahead plugin's replacement of
+						'select' form field markup when used in conjunction with
+						export to PDF.
+						
+						$THA_new_html_form_select_open went from using escaped
+						double quotes within the variable to using just standard
+						single quotes, which shouldn't be an issue primarily because
+						it's a function / script reference, not a file reference.
+
+28	S.E.E.R. 2	1.5.2		c	bugfixes for WARRIOR module.  
+
+						-- Scheduled Down versus Down time was not being computed
+						properly for the "Availability" variable.  It was computing
+						Run time versus Total time, rather than Run Time versus 
+						(Total Time -minus- Not Scheduled Time).  Fixed.
+
+						-- Corrective actions were not back-tracking properly.  If
+						going from an instance of downtime with an alarm and
+						corrective action, which qualified as Scheduled Downtime, to
+						a preceding instance with alarm and no corrective action
+						(which, on its own, would qualify as Downtime), the corrective
+						action was not being back-tracked onto the preceding instance.
+						... result was that (for example) an operator is down 20 minutes,
+						and 2 minutes before he resumes running, he enters corrective
+						action.  This action would not be applied to the previous 18
+						minutes (which it -SHOULD- be applied to!).
+
+						-- for long running instances of Downtime, WARRIOR was 
+						reporting the last detected Alarm as the cause of downtime.
+						This is not logical.  If a machine goes down, the cause of
+						that is the FIRST thing that went wrong.  Everything that
+						happens after that (subsequent faults before resuming an 
+						OK / non-faulted state) are either caused by or are
+						unavoidable in fixing the initial cause of Downtime.  For
+						example, a machine jambup sensor may trip, indicating that
+						material has jambed in the machine.  This fault may be present
+						for only a moment, and then another 10 minutes of Downtime
+						are experienced with the active alarm being an open emergency
+						or safety door.  The cause of the open door is the operator
+						had to open it to clear the jamb - so we should attribute it
+						to the jambup!  Fixed.
+
+						Added variable to WARRIOR global options file - allows the
+						sysadmin to specify a minimum duration time for combinations
+						of user + schedule + job number.  If a combination exists for
+						less than minimum time variable, then that instance will not
+						display in the GROSS THROUGHPUT report.  The data will still
+						be used for the efficiency calculations, and it will show up
+						in the CSV export of the GROSS THROUGHPUT report, but it
+						won't display on the web-interface report.  Simply set to '0'
+						to disable this option and show everything.
+
+29	S.E.E.R. 2	1.5.3		n/a	Added ability to modify CORRECTIVE ACTION value after a run
+						has been completed, from within report 2 (downtime analysis)
+						if that report has been launched from within report 0 (the
+						gross throughput report).  Restricted by Access Level.
+						Also did some general tidy-ing up, and added occcurrance
+						count / frequency count to downtime pareto charts.
+
+30	S.E.E.R. 2	1.5.3		a	Bugfix for WARRIOR report 1 and 2, where duration longer than
+						24 hours with shift = ALL or CUSTOM (jump from report 0) would
+						result in erroneous output.
+	
+31	S.E.E.R. 2	1.5.3		b	Added ability to specify pen color by local instance for
+						THINCHART.  Cleaned up some items to allow better skinning via
+						plugins / themes.
+
+32	S.E.E.R. 2	1.5.4		n/a	Added TTY PERFORMANCE MODEL to track performance of TTY
+						type devices.  This will work well for barcode scanners,
+						RFID readers, keyscan devices, some scales, or any other
+						basic TTY device.  Displays a department monitor (hmi),
+						runtime analysis (report) of fault conditions and bad
+						output, and an individual item display (report).
+
+33	S.E.E.R. 2	1.5.4		a	Bugfix for default 'config/advancedoptions_seer_0.php.DEFAULT'
+						and 'globaloptions_seer_0.php.DEFAULT' where it could be a
+						bit hectic for a first time administrator to discren a typo
+						error that lead to a cyclical call / failure to load the
+						full HMI.
+
+						Added ability to give TouchPanel instances a friendly name,
+						rather than only go by their MachineName (PanelName) for user
+						display.  PanelName is still used for all of the nuts and
+						bolts, we just change what the user is able to see.
+						** helps with shitty OPC Servers that do not allow aliasing,
+						or that have ugly tag beginnings.
+
+						Enhancement (not really a bug, but 'feels' like one) to 
+						TouchPanel such that if you are on any screen other than '0',
+						you would be sent back to screen '0' when the page refreshed,
+						which is terribly annoying.  Nested seer_PANEL_TO_USE variable
+						such that it will pull from POST first, but if not available
+						(like in the instance of a normal refresh), then it'll pull
+						from GET, where the variable was added to the end of the
+						Traffic COP string.
+
+						Added 'ON_OFF_IND_TOGGLE_INVERSE' and 'ON_OFF_IND_INVERSE' to
+						TOUCHPANEL.
+
+						Moved to phpsysinfo version 3, as the 2.54 branch does not
+						support modern Windows OS's (7 or Server 2008 and up), and
+						is no longer supported by the project maintainers.
+
+34 S.E.E.R. 2	1.6.0		Updated PHP code to comply with changes made in PHP7. This
+						stable release has been built against Apache 2.4 and PHP 7 (VC14).
+						The major changes here are in the php.ini and httpd.conf, but
+						also in PHP's deprication of the MySQL API. It has been completely
+						replaced with the MySQLi API. A pretty major change for a database 
+						front end.
+
+						Moved to phpsysinfo version 3.2.7
+
+						Moved to wkhtmlpdf version 0.12.3.2
+
+						Bug-patch where, if user pressed 'go' button without selecting a radial
+						option (when a radial option is required), the thread would die and
+						an error would be logged. Now, instead of dying, the page is simply
+						reloaded and an error is logged saying the user attempted to run an
+						empty query. If many errors of this nature are logged with the use of
+						this release, a further update is planned to warn the user of his/her action
+						and how to fix it. 		
+
+
+
+
+---------------------------------------------------------------------

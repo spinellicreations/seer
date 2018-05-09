@@ -1,0 +1,143 @@
+# MYSQL CONF (/etc/my.cnf) FILE
+# wheeljack.lag.local
+# 2011-0520
+
+###########################################################
+# mysqld client setup					  #
+###########################################################
+
+[mysql]
+port=3306
+socket=/var/lib/mysql/mysql.sock
+
+###########################################################
+# mysqld daemon setup					  #
+###########################################################
+
+[mysqld]
+datadir=/mnt/storage/mysql_db
+tmpdir=/mnt/storage/mysql_db_tmp
+basedir=/usr
+user=mysql
+# ------------------------------------------------------- #
+# -- sockets and such 					  #
+# ------------------------------------------------------- #
+bind-address=127.0.0.1
+# -- restrict to local machine, but without using the 'localhost'
+#    style POSIX socket
+port=3306
+socket=/var/lib/mysql/mysql.sock
+pid-file=/mnt/storage/mysqld.pid
+# ------------------------------------------------------- #
+# -- storage engine					  #
+# ------------------------------------------------------- #
+default-storage-engine=InnoDB
+# -- SEER and mod_openopc typically use InnoDB but
+#    they auto-declare this if installed via web setup.
+#    MYISAM is ok for default, provided your apps auto-declare
+#    what they require.
+# ------------------------------------------------------- #
+# -- logs and such					  #
+# ------------------------------------------------------- #
+general_log=/mnt/storage/mysql_data/mysqld-ops-log.log
+slow_query_log=/mnt/storage/mysql_data/mysqld-slow-queries.log
+expire_logs_days=7
+# ------------------------------------------------------- #
+# -- memory and buffers					  #
+# ------------------------------------------------------- #
+key_buffer_size=3072M
+# -- do not exceed 4096M.  
+join_buffer_size=256M
+sort_buffer=1024M
+read_buffer_size=256M
+sort_buffer_size=384M
+# -- rule of thumb, set to 1/8th the key_buffer_size
+myisam_sort_buffer_size=384M
+read_rnd_buffer_size=32M
+# -- rule of thumb, set to total server memory / 100,
+#    so 1 MB for a server with 1 GB of memory.
+#    This value is PER thread.
+max_allowed_packet=16000M
+# ------------------------------------------------------- #
+# -- caching						  #
+# ------------------------------------------------------- #
+table_cache=128
+query_cache_type=2
+query_cache_limit=2M
+query_cache_size=400M
+tmp_table_size=2G
+# ------------------------------------------------------- #
+# -- threading						  #
+# ------------------------------------------------------- #
+thread_cache_size=8
+thread_stack=256K
+thread_concurrency=12
+# ------------------------------------------------------- #
+# -- connection specific options			  #
+# ------------------------------------------------------- #
+old_passwords=1
+# -- default to using old passwords for compatability with mysql 3.x
+# -- required for the apache php module mysql connector (to date)
+max_connections=800
+# -- should be equal or greater than Apache HTTPD max
+#    connections, plus all of your client apps, plus some
+#    wiggle room.
+long_query_time=60
+wait_timeout=150000
+# -- value, in seconds, the server waits for activity on a noninteractive
+#    connection before closing it hard.  Applies to TCP/IP and Unix sockets.
+#    Value is pulled on startup from global wait_timeout value or from global
+#    interactive_timeout, depending on type of client.
+# -- Range on windows is 1 to 2147483
+# -- Range on Unix is 1 to 31536000
+# -- mod_openopc requires a minimum of 150000 (1.5x internal hardcoded keepalive).
+interactive_timeout=150000
+# -- same idea as wait_timeout, but for clients who declare themselves
+#    as interactive.  Same ranges.
+connect_timeout=45
+# -- how long to wait, in seconds, after a client attempts to connect
+#    but does not suceed with handshake. 10 to 30 seconds is 'sane'.
+# -- keep it under 60 (1 minute).
+# ------------------------------------------------------- #
+# -- innodb specific options				  #
+# ------------------------------------------------------- #
+innodb_additional_mem_pool_size=1024M
+innodb_flush_log_at_trx_commit=1
+innodb_log_buffer_size=80M
+innodb_buffer_pool_size=16384M
+innodb_log_file_size=20M
+innodb_thread_concurrency=12
+
+###########################################################
+# mysqldump specific options				  #
+###########################################################
+
+[mysqldump]
+port=3306
+socket=/var/lib/mysql/mysql.sock
+max_allowed_packet=32M
+
+###########################################################
+# mysqladmin specific options				  #
+###########################################################
+
+[mysqladmin]
+port=3306
+socket=/var/lib/mysql/mysql.sock
+
+###########################################################
+# isamchk specific options				  #
+###########################################################
+
+[isamchk]
+key_buffer=32M
+
+###########################################################
+# mysqld safe setup					  #
+###########################################################
+
+[mysqld_safe]
+socket=/var/lib/mysql/mysql.sock
+pid-file=/mnt/storage/mysqld.pid
+nice=0
+

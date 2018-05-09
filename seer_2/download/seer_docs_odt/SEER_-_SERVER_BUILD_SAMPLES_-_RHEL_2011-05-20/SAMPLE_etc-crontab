@@ -1,0 +1,53 @@
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+HOME=/
+
+# /etc/crontab
+# wheeljack.lag.local
+# 2011_0520
+
+# Example of job definition:
+# .---------------- minute (0 - 59)
+# |  .------------- hour (0 - 23)
+# |  |  .---------- day of month (1 - 31)
+# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# |  |  |  |  |
+# *  *  *  *  *  command to be executed
+
+# ADVISORY
+# -- directory /mnt/backup is dumped to tape between the hours of 11:00 and 15:00 daily PST
+# -- do not attempt to run DAILY LOGWATCH, MOD_OPENOPC daily database cleanup, SEER daily database cleanup
+#    MYSQL_INNODB_BACKUP, or DIFFERENTIAL BACKUP during this time period or you WILL CORRUPT THE BACKUP TAPE!
+# -- for all intents and purposes, do not write to /mnt/backup between 11:00 and 19:00 
+# END ADVISORY
+
+# DAILY LOGWATCH
+15 01 * * * root /opt/syslog/log_wrapper.sh /opt/syslog/logwatch_daily.sh /mnt/backup/server_logs/wheeljack > /dev/null 2>&1
+# END DAILY LOGWATCH
+
+# MOD_OPENOPC DB MAINTENANCE
+# -- 1x weekly (SATURDAY @ 10:05 PM)
+05 22 * * 6 root /usr/bin/python /opt/mod_openopc_2/prog/mod_openopc.py MAINT_DB mod_openopc > /dev/null 2>&1
+# END MOD_OPENOPC DB MAINTENANCE
+
+# MYSQL INNODB BACKUP
+# -- REM -- USING INNODB NOT MYISAM -- 00 01 * * * root /usr/bin/mysqlcheck -o -u mysql -pmysqlpassword mysql > /dev/null 2>&1
+05 01 * * * root /usr/bin/mysql -u mysql -pmysqlpassword -e "FLUSH QUERY CACHE" > /dev/null 2>&1
+20 01 * * * root /usr/bin/mysql -u mysql -pmysqlpassword -e "FLUSH LOGS" > /dev/null 2>&1
+35 01 * * * root /usr/bin/python /opt/mysql_innodb_backup/prog/mysql_innodb_backup.py BACKUP > /dev/null 2>&1
+# END MYSQL INNODB BACKUP
+
+# DIFFERENTIAL BACKUP
+00 00 * * * root /usr/bin/python /opt/python_cookbook_backup/prog/python_cookbook_backup.py /opt/mod_openopc_2 /mnt/backup/differential_backup > /dev/null 2>&1
+05 00 * * * root /usr/bin/python /opt/python_cookbook_backup/prog/python_cookbook_backup.py /opt/apache_pages/seer_2 /mnt/backup/differential_backup > /dev/null 2>&1
+15 00 * * * root /usr/bin/python /opt/python_cookbook_backup/prog/python_cookbook_backup.py /opt/syphon /mnt/backup/differential_backup > /dev/null 2>&1
+25 00 * * * root /usr/bin/python /opt/python_cookbook_backup/prog/python_cookbook_backup.py /opt/fieldgate_dm3_reporter /mnt/backup/differential_backup > /dev/null 2>&1
+30 00 * * * root /usr/bin/python /opt/python_cookbook_backup/prog/python_cookbook_backup.py /opt/apache_pages/starbuc /mnt/backup/differential_backup > /dev/null 2>&1
+# END DIFFERENTIAL BACKUP
+
+# TARBALL QUICKIE DIRECTORY BACKUPS
+# FORM IS ./tarball_quickie.sh [SERVER-OR-BACKUP NAME] [DAYS TO RETAIN BACKUPS] [PULL PATH TO SOURCE DATA]
+# no jobs
+# END TARBALL QUICKIE DIRECTORY BACKUPS
+

@@ -1,0 +1,11 @@
+# /etc/mail/access
+# wheeljack.lag.local
+# 2011_0520
+#
+# By default we allow relaying from localhost...
+Connect:wheeljack			RELAY
+Connect:wheeljack.lag.local		RELAY
+Connect:localhost.localdomain		RELAY
+Connect:localhost			RELAY
+Connect:127.0.0.1			RELAY
+#

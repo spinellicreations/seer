@@ -1,0 +1,706 @@
+mod_openopc	
+---------------------------------------------------------------------
+# ... integrating the Python OpenOPC project to run HMI
+#     over Linux, BSD, Unix in an unfettered manner.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ mod_openopc(_2)
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli & J. Trembley for RS Automation, LLC
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved.
+ This is open software, released under GNU GPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the GPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/gpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+				
+					RS Automation, LLC
+				Email:	RickS@RSAutomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+REVISION HISTORY...
+---------------------------------------------------------------------
+Be advised that revisions of the project prior to release candidate 
+stage shall be made as 'noteable' points are reached, and not at
+every revision point.  However, note that the project shall not 
+be used on regulated or otherwise 'mission critical' systems until
+such time as a minimum of rc-2 stage has been reached.  After such
+time, it is required that any and all revisions, however minor, be
+noted here.
+---------------------------------------------------------------------
+
+ENTRY	NAME		V		REV	NOTES
+-----	----		-		---	-----
+
+0	mod_openopc	0.0.0-a		n/a	none, just getting started.
+
+1	mod_openopc	0.0.1-a		2	building
+
+2	mod_openopc	0.0.1-a		2-1	bugfix for a2
+
+3	mod_openopc	0.0.1-a		3	prep for beta trial
+
+N-a	alpha builds end with 0.0.1-a3, which is the last test deployment
+	build.  All subsequent builds represent a departure from 'theoretical',
+	and reflect changes and additions made upon a functioning program.
+
+4	mod_openopc	0.1.0-b		n/a	trial on mozzloma server
+
+5	mod_openopc	0.1.0-b		2 & 3	by now, all known functions of
+						the program have been integrated
+						as command calls to the primary
+						program wrapper (mod_openopc.sh).
+						This version ran from Nov. 03
+						through Nov. 15, 2008 (as rev 2),
+						with the only modification being
+						the change in the SERVICE mode
+						cycle timer.  To allow for non
+						instantaneous killing of an 
+						existing process, the SERVICE
+						now sleeps in the background
+						for "WAIT TIME MINUS 1" seconds,
+						and in the foreground for 1
+						second.  Thus rev 3.
+
+6	mod_openopc	0.1.0-b3 (10/31/08) and 4
+						bugfix for 0.1.0-b3 (10/30/08)
+
+7	mod_openopc	0.1.0-b5		this is what is anticiapted to
+						be the final beta... assuming that
+						opc read function for checking
+						device status (online or not)
+						can be ironed out.  If not,
+						then beta 5-x may be needed.
+						Milestones include a now fully
+						tested maintenance routine
+						for backups and old record
+						deletion with simple calls 
+						from to the wrapper.  A few
+						small kinks worked out.
+
+9	mod_openopc	0.1.0-rc	n/a	dual purpose revision named
+			0.1.0-b		5-1	as beta5 and rc0.  Should it
+						prove out, next version shall be
+						rc1, else, next will be b5-2
+						bugfix.  Auto testing for
+						target status has been tested
+						and works, although it may
+						be causing a slight lag, or
+						it also may simply be psycho-lag.
+						Letting it run for a day or two 
+						will tell.
+
+10-14	mod_openopc	0.1.1-b1		the jump to 0.1.1 indicates a few
+						major changes.  First, OpenOPC
+						and its partner Gateway have been
+						patched to version 1.1.6, as oppo-
+						-sed to the previous 1.1.3 used.
+						This has solved all problems with
+						regard to hangups or crashes when
+						multiple simultaneous requests to
+						a single Gateway were made.
+						There is no need to include a hop
+						feature anylonger. Second, we
+						were only setup to handle 'numbers'
+						as OPC leaf data.  Instead, now
+						we are able to handle both ASCII
+						strings and any numbers.  All
+						number leafs are converted to
+						float (with 2 decimal digits),
+						and then dumped to string values.
+						This, coupled with a requirement
+						for varchar database fields allows
+						us to avoid any nastyness that
+						may come up when mixing 'types'.
+						The downside is only a very small
+						increase in database size, negligable.
+
+14	mod_openopc	0.1-1-b2 - 8 		various beta builds to overcome the
+						occasional dropout of the OpenOPC
+						Gateway Service.  mod_openopc now
+						checks for gateway integrity, and
+						upon dropout will signal the win32
+						opc server / gateway host to stop
+						and then restart the service.  This
+						takes place in the course of seconds
+						so downtime is 'seamless' to the user
+						and virtually all logs.  This required
+						building the mod_openopc_gateway monitor
+						module, which runs as a service on the
+						win32 gateway / opc host.  This has
+						effectively eliminated unexpected 
+						downtime.  Added subroutine for
+						bridging two devices.  This is useful
+						for split proprietary (DH / Modbus / 
+						etc...) networks, or if you need to 
+						bridge data between devices on
+						different types of networks (that can't
+						communicate), or if you need to bridge
+						data between PLC's from different
+						manufacturers (ex. Mitsubishi to AB
+						communication).  This is finished up
+						in the next build.
+
+15	mod_openopc	0.1-1-b9		cleaned up the bridge routine.  In the
+						trial phase.
+
+16	mod_openopc 	0.1-1-rc1		merged with mod_openopc gateway routine
+
+17	mod_opneopc	0.1-1-rc2		removed table locks from sql write routines,
+						which includes opc_read / opc_fault. Started
+						using RSLinx service again rather than the
+						direct executable.  Turns out, there's an
+						known issue with many OPC Servers where
+						they'll suffer memory overrun after a
+						certain number of operations.  So, we'll
+						nip it in the bud, and use the mod_openopc
+						MANUALRESTART OPC function in order to 
+						do a daily reset of the Win based RSLinx
+						service.
+
+18	mod_openopc_2	2.0-1-b	n/a		complete fork of the project.
+						Have merged into a single primary program
+						file in full python (2.5 compatiable),
+						requiring various modules (all readily avail).
+						Added variable for polling throttling, to 
+						decrease toll / handle load better on the
+						opc server / gateway itself.  DH+ comm was
+						pegging cpu usage at 100%, and may have been
+						why system was faulting.  Have also made it
+						so that service subroutines maintain a
+						persistent opc and sql connection, eliminating
+						some overhead and increasing response time.
+						Fault routine will bump just about any
+						fault, reliabily to the database.  Fleshed
+						out the 'help' commmand to be more descriptive.
+						Added subroutine for automated writed / scheduled
+						/ perpetual writes (will be useful if we want to
+						have 'preset recipes' or whatever for a device,
+						that a user can select, and then dump full
+						registers to devices, eliminating need to
+						change various setting manually.  Some work
+						on the bridge, but not tested (we're still holding
+						off on that for now).  The backup and routine
+						to tarball databases for some reason isn't being
+						called right from within python, so that needs
+						to be fixed.  
+							TO DO...
+							1- fix backup routine... routine itself
+							is good, but it just won't launch.
+							2- why won't WRITE_ONE_SHOT work if
+							it is called from a php webpage?
+							3- will we have the same problem with
+							READ_ONE_SHOT from a php web page?
+							4- write documentation
+							5- eventually tweak the bridge.
+
+19	mod_openopc_2	2.0-1-b2		created write and read daemon services that 
+						glomm all over a directory and parse / serve
+						exported file contents to the opc server,
+						eliminated the 'soft fail' feature, as it was
+						causing opc server timeout errors and hangups,
+						hard failure and restart occurs in event of
+						failure to grab data.  but it seems to be
+						very stable (up a few hours with no opc errors),
+						the daemons solved the #2, and 3 issues above
+						from the last revision, provided the SEER
+						'system_helper_routine' is used to call reads
+						and writes from php webpages.  (see SEER backups
+						and prog for that stuff - daemons are universal).
+							TO DO...
+							1- get bridge running
+							2- write docs
+							3- figure out why maint routine won't tarball.
+
+20	mod_openopc_2	2.0-1-b3		created a gateway restart / refresh routine as 
+						a helper script.  found a bad memory leak in
+						the windows dcom interface (openopc.py).  looking
+						into it.  Bridge routine is removed and held as 
+						a WIP file for future re-integration and fixing.
+						the refresh takes care of the memory leak... you just
+						have to watch it.
+							TO DO...
+							1- write docs
+							2- get maint routine to tarball.
+
+21	mod_openopc_2	2.0-1-b4
+			     -rc 1		polished up the gateway restart / refresh routine, 
+						took care of the memory leak with regard to reads
+						and such.  writes leak a little but
+						this is unavoidable, possible future releases
+						of OpenOPC may resolve this.  for now, the once
+						daily reset of the gateway has solved all memory 
+						issues.  And now, because I was bored - or not - 
+						the BRIDGE routine is tested and working!
+						this is a completed build, release candidate 1
+						of what will be version "1", once tarball is fixed.
+							TO DO...
+							1- write docs
+							2- get maint routine to tarball.
+22	mod_openopc_2	2.0-1-b5
+			     -rc 1-1		fixed issue where maint backup routine would not
+						tarball.  apparently, while single ticks are used
+						to surround os.system('whatever') commands in
+						documentation, they do not work in  practice, simply
+						eliminating the ticks resolved the issue.  added the
+						server reset function to mod_openopc python executable,
+						rather than having to call it as a separate script.
+						the script itself (due to the particular way in which
+						it needs to run) is still isolated as 'helper_001.sh',
+						but is called using the command SERVER_RESET 
+						with arguments [opc_servername] and [delay].  This also
+						creates a form by which future os command only style
+						patches can be added... simply incrementing, so
+						the next would be helper_002.sh, and so on...
+							TO DO...
+							1- write docs
+
+23	mod_openopc_2	2.1-0			documentation written, released as 
+						"version 1" 2.1-0.
+							TO DO...
+							1- continue to monitor and make sure all
+							   is well.
+
+24	mod_openopc_2	2.1-1			- bugfix... if the bridge routine encounters a issue
+						such as a down leaf, it reports the wrong leaf as
+						down.  The routine continues on properly and does
+						what it is supposed to, but it just would be confusing
+						to a user trying to figure out which machine was actually
+						down.  This was attempted to be fixed, but failed.
+						The resolution was to inform user differently.  Instead
+						of "TARGET DEVICE IS DOWN... DEVICE IS..."  the user
+						will be told "SOURCE DEVICE IS DOWN... SOURCE WOULD WRITE TO..."
+						which just makes more sense - even though the user still
+						has to go into the preset file and lookup which device
+						was doing the writing.  This ONLY affects the bridge.
+
+25	mod_openopc_2	2.1-2			- feature addition... when using READ routines, it was 
+						asked that string values be able to be included in reads.
+						Obviously, a PLC's 'string' register is always available, but
+						the disgusting amount of comm bandwidth necessary to transmit
+						a string (30 to 45 each 16 bit words) is unacceptable.  The result
+						was to create the COMMENT function within the mod_openopc read
+						routine.  A user can create a second table, within their primary
+						database (same DB that READ results are written to), and give it
+						the name of the read routine plus _comment.  For example, the
+						READ routine normally writing to 'silolevel' on the 'mydb' dabatase
+						can have a comment table named 'silolevel_comment' on the 'mydb'
+						database.  This table may only have 2 columns... #0 being 'MACHINE'
+						and #1 being '[anything you want it to be]'.  mod_openopc will
+						poll the contents of the identified table, look for a MACHINE column
+						matching the leaf_sql_name (this is column #1, the one right after
+						DATESTAMP, when we're pushing contents to the database), and then take
+						whatever is in the next column and jamb it into the first open column
+						at the end of the WRITE string.  So, this means the comment goes
+						AFTER all values polled from OPC Server, but BEFORE all 'FILLER'
+						columns.  The preset template describes how you set this up.  
+						Commenting is optional.  To disable, set preset file value 
+						COMMENTENABLE:no  and YOURSQLCOMMENTTABLE:none.
+
+26	mod_openopc_2	2.2-3			- found a major syntax error.  In the event of multiple gateway
+						communication failures / reconnect failures (2 actually), a
+						reconnect loop will be entered, at which time, mod_openopc is
+						calling the 'fire_up_gw()' and 'fire_up_opc()' subroutines.
+						In the RSTX loop, 'fire_up_opc()' was mis-typed as 'fire_up_upc()'
+						which resulted in a perpetual failure -- because '...upc()' does
+						not exist.  This is fixed.  
+
+27 	mod_openopc_2	2.2-3a			- bugfix for startup where global variable OPC_SERVER not defined
+						before call.  This affected only DAEMON functions.
+
+28	mod_opneopc_2	3.0-0			- massive upgrade, resulting from a rework of 2.1-0 based upon 
+						work from 2.2-3.  Ported to Windows: program modified to be as
+						operating-system agnostic as possible, helper_001 ported to 
+						Windows.  Global options file now requires you to choose
+						UNIX or WIN as your operating system type.  So far, however,
+						we have not been able to get procname to compile under WIN,
+						which means that the individual mod_openopc threads will not
+						be identified by their "job"; rather, they'll all show up in
+						the Windows task manager as "python.exe".  Floating point decimals
+						are now allowed to have up to 4 fractional units of precision as
+						opposed to previous 2 (we can set this higher, but we just don't
+						want something ridiculous like '50'... 4 seems like more than
+						enough for most apps.  Dropped support for MAINT_BACKUP subroutine,
+						which used to tarball our SQL DB's into backup files.  We're not
+						going to attempt to be one of these 'annoying' apps that tries to
+						take over control of your whole computer -- DB backups are the job
+						of the DB administrator who can configure and schedule them as he
+						or she wishes.  However, we will keep the MAINT_DB subroutine for
+						cleaning up old records based on datestamps, because this really
+						is a useful and non-invasive function that anyone can make use
+						of.  WRITE_DAEMON expanded to allow for writing declared values
+						or writing values from a preset file.  Form is now...
+							Files dumped into WRITE_DAEMON's monitored folder
+							should conform to...
+								# START FILE
+								[your_write_type]
+								YOURWRITETYPE:DECLARED      (or PRESET)
+								[your_leafers]
+								YOURLEAFERS:[targetdevice]register1&value1&|  (or NONE)
+								YOURWRITEPRESET:nameofwritepresetfile   (or NONE)
+								# END OF FILE
+
+29	mod_openopc_2	3.0-1		development of above.
+
+30	mod_openopc_2	3.0-2		bugfix for above, syntax problem.  added additional
+						functionality to the mod_openopc_write_declared function of
+						S.E.E.R. and uncovered a 'boo-boo' in the WRITE_DAEMON.
+						fixed, all good. (( the WRITE_DAEMON was stripping the
+						'trim' characters from the front and back of YOURLEAFERS, 
+						which means essential opc server syntax characters were
+						missing when it tried to perform a write )).
+
+31	mod_openopc_2	3.0-3		when attempting to insert NULL fields into a mysql database with the
+					field value being '' (empty), but the field not being set to VARCHAR,
+					an error was thrown.  fixed by setting null fields (specifically for
+					the empty fields on the right side of a READ routine) to 'NULL' instead.
+					this worked well.
+	
+						TO BE DONE --> Write Manual.
+
+32	mod_openopc_2	3.0-4		added verbosity option in the global options file.  now a user may choose
+					to have a very descriptive or a more minimalistic echo to tty across the
+					board.  also, made throttle more logical, throttle is not a value of time
+					in seconds that system waits to gather data triggered to be polled 'throttle'
+					seconds ago.  helps with shitty comm, and puts deprecated variable to use.
+
+33	mod_openopc_2	3.0-5		added the ACKNOWLEDGED column to system_faults table in mod_openopc database,
+					which requires entering said column as 'NULL' when throwing a fault.
+
+34	mod_openopc_2	3.0-6		bugfix; when using InnoDB or other transactional databases, MySQLdb library
+					requires a db.commit() to 'confirm' the table actions (any action), so
+					added functionality and ability to call it is based on preset in *.sql
+					preset file.
+
+35	mod_openopc_2	3.0-7		added SPACE_BRIDGE subroutine for bridging data across two different
+					OPC servers / networks.  
+
+						TO BE DONE --> Write Manual.
+
+36	mod_openopc_2 	3.0-8		manual has been written, and fault notification added for group build
+					failure.
+
+37	mod_openopc_2	3.0-9		added distinction between an UNKNOWN COMM RESET and GROUP BUILD FAILURE
+					when pushing faults to database.
+
+38	mod_openopc_2	3.0-10		added GLOBAL OPTIONS FILE (options.opt) variable GROUPBUILD_TIMEOUT_OVERRIDE
+					which allows user to specify allowed time for opc group build.  found that
+					the default hard-coded 5 second (5000 ms) timeout allowed by OpenOPC was
+					insufficient for older (slower) serial and token ring style networks that are
+					prone to lag and delay.  recommend a setting of 30 seconds or greater.
+
+39	mod_openopc_2	3.0-11		added INNODB and MyISAM database OPTIMIZATION to the DB_MAINT routine.
+
+40	mod_openopc_2	3.0-12		added OS agnostic determination of program paths.  deleted program path
+					declarations from the global options file, and deleted all hardcoded calls to
+					global options file in mod_openopc.py -- now uses relative call.
+
+41	mod_openopc_2	3.0-12b		fix for annoying notifications of reset file when running daemons... silenced.
+
+42	mod_openopc_2	3.0-12c		syntax fix in helper_003.sh line 53
+
+43	mod_openopc_2	3.0-13		fix for application crash after attempting to insert record on READ
+					operation after an OPC Topic has been offline for a very long time.  This
+					was accomplished by adding the "keepalive" instructions to READ routine which
+					were already part of BRIDGE, SPACE_BRIDGE, and DAEMON routines.
+
+44	mod_openopc_2	3.0-14		deprecated procname module due to lack of support / development,and moved
+					to module 'setproctitle', which may eventually become part of python standard
+					library.  the module is cross platform compatible, but serves almost no purpose
+					on windows (as it won't show up in task manager)... but on Linux / Unix / Mac, it
+					works perfectly!
+
+45	mod_openopc_2	3.0-14a		added variable declaration to the helper scripts in order to shorten up command
+					line length, and require nohup to launch and fork properly.
+
+46	mod_openopc_2	3.0-14b		removed variable declaration from helper script, 
+					was posing problems... but the 'long form' for
+					forking works wonderfully.
+
+47	mod_openopc_2	3.1-0		SEE 3.1-2, below - this was an intermediate step due to developing
+					on a production server rather than an offline one.
+
+48	mod_openopc_2	3.1-1		SEE 3.1-2, below - this was an intermediate step due to developing
+					on a production server rather than an offline one.
+
+49	mod_openopc_2	3.1-2		MASSIVE upgrade... eliminated all helper scripts, and took care of
+					auto launching all your presets by simply declaring which ones you
+					want to fire up in the global options file (options.opt).  Then, you
+					just call ./mod_openopc.py AUTO_LAUNCH CONFIRM and they'll all start
+					up.  Also, this takes care of all server resets as well... you declare
+					which OPC servers you want to reset, the delay for client disconnect,
+					and the hours between resets in the global options file for each 
+					opc server.  When you call AUTO_LAUNCH it will fork not only the
+					READ / WRITE / DAEMON processes, but it'll also fork a new 
+					program-only subroutine called SERVER_DAEMON.  SERVER_DAEMON sits there
+					and resets your server for you on a clock, so that you don't have to
+					add it to the task scheduler...  
+						-- the moral of this is that you should only have ONE thing
+						in your task scheduler, the call to MAINT_DB to clean up your
+						databases.
+						-- MAINT_DB was also cleaned up.  You now declare which
+						tables you want to do maintenance on in the global options
+						file, and call MAINT_DB like this...
+							-- ./mod_openopc.py MAINT_DB [OPTIMIZE | blank]
+						-- it'll cycle through all your DB's and delete null
+						records and old records, just like before.  Adding the
+						OPTIMIZE flag will force a re-index.
+					Added routine SETTINGS to display the current entries in the
+					global options file for reference or troubleshooting.
+					Added routine GATEWAY_DAEMON to replace "fire up mod_openopc" 
+					DOS batch file for Win32 OPC virtual guest (or dedicated machine)
+					server.
+					Changed the way that running routines check for a SERVER_RESET condition.
+					Now, uses a loop decrementing the interval time before the next
+					cycle of the routine, where each scan of the loop checks against the
+					reset condition.  If present, it closes the thread on the OPC Server,
+					continually checks for the next RUN condition, and (once finding the 
+					next RUN condition) re-establishes comm with the OPC Server.  This
+					has cut resets down to about 40 seconds (minimal).  The user may input
+					a delay to allow clients to disconnect which must be no less than 15
+					seconds, and should be no greater than 60, but we're only enforcing the
+					15 seconds.  It is absed upon system performance, not upon scan time.
+					So now even a routine with a 5 minute scan cycle can utilize an OPC
+					Server with a 15 second reset delay.
+
+50	mod_openopc_2	3.1-3		STABILITY FIX... 04/07/2011 we noticed a potential issue.  For
+					an unknown reason, the OPC Server (in the Win32 virtual guest) began
+					slowing down - it ran, but slow.  This caused delayed writes and so
+					forth, and cpu usage spiked (only in the Win32 virtual guest running
+					the OPC Server, not in the Linux host OS running mod_openopc and the
+					rest of this system's goodies).  The thought was with 1100 concurrent
+					read tags and 200 to 300 concurrent write tags, that the 2.5 GHz
+					single core virtual machine had hit its peak capacity.  Original
+					design was 1000 tags per minute TOTAL (read and write combined).
+					So... what the hell?  I added 3 more cores to the virtual machine,
+					giving it 4 virtual processors, which suprisingly resulted in what
+					appeared to be a scaled OPC Server (I hadn't thought this possible,
+					but it appeared to work after updating HAL and applying some
+					Windows registry patches [provided by Microsoft Knowledgebase, not
+					a third party]).  However, 24 hours later (give or take), the whole
+					virtual machine locked up someting fierce.  It still accepted acpi
+					power commands, but that was about it -- nothing was accessible.
+					There are two theories at work here, as to the possible cause...
+						1) it actually is overloaded [which, as we said, 1000 tags
+						   was the design goal per OPC Server + Win32 guest instance]
+						   and the additional virtual processors didn't quite
+						   work because the OPC Server isn't supposed to support
+						   multi-processor execution, and seeing it scale was
+						   more a figment of the taskmanager than anything else.
+					  	   This implies the registry patches applied made the 
+						   system simply more unstable than before (which is possible).
+						2) For certain subroutines, there is the possibility
+						   within mod_openopc for an infinite loop.  However it is a
+						   controlled loop - where there is a time delay between 
+						   subsequent executions.  However, given enough instances
+						   of this loop (and if the conditions that caused it
+						   [such as an OPC device being powered down and waiting
+						   for it to be turned back on] never go away) this would
+						   explain the eventual crippling that occurred.
+					Or, of course, it could be a combination of the two.  So here's
+					where we're at...
+						1) go back to a single core virtual machine.  
+						2) eliminate the potential loops after say "3 tries",
+						   which should be plenty adequate to either get the
+						   job done or give up.
+					NOTEABLE CHANGES...
+						1) max writes per second per mod_openopc WRITE_DAEMON subroutine
+						   instance.  This was rougly 1200, and has been increased to
+						   6000 (ideal world - don't plan on more than 1500 in practical
+						   application - if you need more, setup multiple WRITE_DAEMON
+						   presets for the same OPC Server [see user manual on how to
+						   setup presets]).  Latency intentionally added to WRITE_DAEMON
+						   subroutine, where directory scan now cycles with a 0.05 second
+						   interval delay.
+						2) MySQL keepalive count has been dropped from 100,000 cycles to
+						   10,000 cycles across the board.  Typically, this should result
+						   in a keep-alive request sent anywhere from once every 15 minutes
+						   to once every 6 hours, depending on system load relative to
+						   system horsepower.
+						3) an infinite-loop-killer has been added to the WRITE and the
+						   WRITE_ONE_SHOT subroutines, where a failed write will only be 
+						   reattempted twice, after which the routine will exit as if it 
+						   had completed rather than continue to loop indefinately.  It
+						   will, of course, bark out an error.  'system_faults' table will
+						   be populated with error indicating subroutine name, opc server,
+						   date/time, and the fault type "OPC_INFINITE_LOOP".
+						4) GATEWAY or OPC_SERVER_COMM reconnects will push much more
+						   informative faults.  We will now know a) what failed [gateway
+						   or opc server comm] and b) when the situation resolved itself
+						   [when gateway and/or opc server come back into running state].
+							-- GW_DOWN		on fail if cause
+							-- OPC_SERVER_DOWN	on fail if cause
+							-- GW_RESTORED		on restore if cause
+							-- OPC_COMM_RSTRD	on restore if cause
+
+51	mod_openopc_2	3.1-4		Additional work from the 3.1-3 update...
+						-- OPC Server data update rate is now controlled by the 'scan'
+						   time of your mod_opneopc data logging / recycling (for bridges,
+						   spacebridges, and reads)
+						-- you may now select 'cache' or 'hybrid' for the opc group read
+						   type.  mod_openopc uses subscription refreshes ("pulled") rather
+						   than sync or async reads for bridges / spacebridges / and reads.
+						   formerly, 'hybrid' was used by default, which would defer to
+						   whatever the opc server software's base value was.  we are now 
+						   able to explicitly choose 'cache' if we wish.
+					The above two changes result in roughly a 25 percent CPU usage drop on the
+					test single core opc server pulling 2000 tags per minute (roughly 1000 every
+					30 seconds).  Formerly, we were around 50 to 60 percent CPU constantly, with
+					spikes to 75 or 90 percent.  Now we're around 25 to 35 percent cpu, with
+					spikes up to 45 or 55 percent.
+
+52	mod_openopc_2	3.1-4a		fix for potential bug - we observed the possibility in syphon that
+					long periods of inactivity (days) resulted in what appeared to be 
+					a mysql database socket connection timeout.  There is a keepalive
+					instruction, which basically just sends a 'show tables' command to
+					the db engine - this is the same instruction in both mod_openopc
+					and syphon.  However, since it didn't work for syphon, there's no
+					reason to trust it in mod_openopc.  Here's an excerpt from the
+					syphon revision history file...
+
+					>> build = 14	syphon	 version = 0.1-6	revision = a
+					>> 
+					>> bugfix - mysql keepalive instruction was unsuccessful,
+					>> or at least that is why we believe that after long
+					>> periods of inactivity syphon will fail to resume
+					>> data logging after activity starts up again (mysql
+					>> socket timeout).  The syphon_fault_unk() function is
+					>> deprecated by syphon_fault_recycle() function, which
+					>> recycles both the telnet connection and the mysql db
+					>> socket connection every 5 minutes during periods of
+					>> inactivity.  It also handles faulted instructions by
+					>> dumping and then re-establishing telnet and db comm.
+
+					This build of mod_openopc attempts to implement the revised
+					keepalive method.
+
+					Additionally, fixed a calling error in the MAINT_DB routine, where
+					it would not accept the db name argument.  Updated the user guide
+					to match.
+
+53	mod_openopc_2	3.1-4b		bugfix for BRIDGE and SPACEBRIDGE routines where the check
+					for state (RUN or RESET [as in 'server being reset']) was not
+					being executed for presets with an update interval shorter 
+					than 5 seconds.  Should have noticed that a long time ago.
+					Oh well, it's fixed now.
+
+54	mod_openopc_2	3.1-4c		bugfix for the fault_unk(nown) call.  Upon reconnection, differentiation
+					between 'gateway' faults and 'opc server' faults utilized a string
+					declaration not held within double quotes, resulting in an immediate
+					program exit (without warning) when machine reconnect was necessitated
+					by automatic re-connect function after communication loss to machine.
+					A symptom of this is a "FAULT_UNK" entry in the status table, followed
+					by nothing... no further faults are seen, and the process has died.
+					This is resolved.
+
+55	mod_openopc_2	3.1-5		addition of UPDATE argument for READ routine.  Allows reading
+					with update to existing database row, rather than creating a
+					new row.
+
+56	mod_openopc_2	3.1-5a		AUTO_LAUNCH now monitors child threads, and anything
+					that faults / dies / or is killed is automatically
+					restarted on a rolling 5 second verification routine.
+
+57	mod_openopc_2	3.1-6		FAULTY - abandoned.
+
+58	mod_openopc_2	3.2-0		restructuring for unity.  cannot retain full backwards compatability
+					for openopc library distribution.  forking and blending into
+					parent level.
+
+59	mod_openopc_2	3.2-1		added ability to declare servers to reset to be "NONE", thereby
+					skipping the launch of any GATEWAY_RESET_DAEMONS when using
+					the AUTO_LAUNCH subroutine.
+
+60	mod_openopc_2	3.2-2		tweaked the delay for daemon filehandling.
+
+61	mod_openopc_2	3.2-3		added ability to stop / restart OPC Server via GATEWAY
+					RESET functionality - in an effort to clear orphaned
+					groups not properly handled by OPC Servers.
+
+62	mod_openopc_2	3.2-3a		bugfix for READ_ONE_SHOT where group build timeout was not
+					properly defined.
+
+63	mod_openopc_2	3.2-3b		bugfix (preventative) for SPACE_BRIDGE where potentially a file
+					lock issue could occur if two events (generate FLATFILE)
+					occurred for the same item during the same second.
+
+64	mod_openopc_2	3.3		added 'what is going on' alert updates to tty for the gateway
+					daemon (via the mod_openopc_gateway module).  server will alert
+					administrator or developer of when it is building a new client
+					connection, whether it was successful or not, and if not, give
+					a suggestion as to why.
+
+					found issue with deploymend on windows 7 / server 2008 64 bit,
+					which probably would have shown up on xp 64 bit also... basically
+					the automation dll (32 bit) causes trouble when interfacing with
+					64 bit python.  sometimes it works.  most times it doesn't.
+					the solution is a 64 bit automation dll... not all OEM's will 
+					ship these with their OPC Servers, so the solution is to
+					disable all other automation dll's and use strictly the GrayBox
+					freeware dll.  64 and 32 bit versions are now included under the
+					help / dependancies folder.  
+
+65	mod_openopc_2	3.3-1		bugfix for opc servers that use no character trim (start trim or
+					end trim = 0), which would cause a program fault.
+
+					added ability for forge the machine name (leaf_sql_name) for
+					row entry when using READ.  this is to account for opc servers
+					that do not allow alias topic creation, and for which the
+					user needs to log data in a manner that will 'make sense'
+					for other interfaces (such as SEER).
+
+					added helper for win environments, where a single command now,
+					c:\path-to\mod_openopc_2\prog\win32_bootup.py will launch
+					the GATEWAY_DAEMON as well as the AUTO_LAUNCH (with CONFIRM
+					option asserted) routines.  it is a quick and dirty for
+					anyone running the whole system under windows.
+
+66	mod_openopc_2	3.3-2		bugfix for indeterminate issue where TEST_FOR_ECHO would fail
+					due to use of brackets instead of parenthesis, and lack of 
+					specification of 'opc.read' versus 'opc' with no argument,
+					which is the unofficial short-form.
+
+					added CLI argument 'ACK' to READ command, such that upon
+					a successful read, a WRITE preset file may be executed to
+					acknowledge the successful read.
+
+					added SERVER_SEEK command, to find running OPC server
+					instances on any given GATEWAY instance.
+
+					added ability to log READ data to a flat-file (with *.log
+					extension) rather than push to database (databse is still
+					necessary to maintain running application.
+
+---------------------------------------------------------------------
