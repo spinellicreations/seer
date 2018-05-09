@@ -1,0 +1,103 @@
+------------------------------------------------
+--WARNING--
+------------------------------------------------
+
+--ENGLISH--
+-----------
+The Tank or Silo Agitator which you have selected does not have a builtin HTTP server.
+
+This means that we cannot display its 'Live Status' page.  
+
+Please consult the user manual for the Variable Frequency Drive which powers the 
+selected Agitator, to determine if an HTTP server can be 'turned on' or enabled for it.
+If so, then simply enable the Drive's server and add the web-address to the S.E.E.R. 
+Tankmodel Local Options file.
+
+--FRENCH--
+----------
+L'agitateur de réservoir ou de silo que vous avez choisi n'a pas un serveur de HTTP de 
+builtin.
+
+Ceci signifie que nous ne pouvons pas montrer sa page de phase de statut.
+
+Veuillez consulter le manuel d'utilisation pour la commande variable de fréquence
+qui actionne l'agitateur choisi, pour déterminer si un serveur de HTTP peut être mis 
+en marche ou permis pour lui. Si oui, puis permettez simplement le serveur d'entraînement 
+et ajoutez Web-adressent aux options locales de S.E.E.R. Tankmodel le dossier.
+
+--SPANISH--
+-----------
+El mezclador del tanque o del silo que usted ha seleccionado no tiene un servidor de 
+HTTP del builtin.
+
+Esto significa que no podemos exhibir su página viva del estado.
+
+Consulte por favor el manual del usuario para la impulsión variable de la frecuencia 
+que acciona el mezclador seleccionado, para determinar si un servidor de HTTP se puede 
+girar o permitir para él. Si es así entonces permita simplemente el servidor de la 
+impulsión y agregue tela-tratan a las opciones locales de S.E.E.R. Tankmodel el archivo.
+
+--ITALIAN--
+-----------
+L'agitatore del silo o del carro armato che avete selezionato non ha un assistente di 
+HTTP di builtin.
+
+Ciò significa che non possiamo visualizzare la relativa pagina in tensione di condizione.
+
+Consulti prego il manuale dell'utente per l'azionamento variabile di frequenza che 
+alimenta l'agitatore selezionato, per determinare se un assistente di HTTP può essere 
+acceso o essere permesso a per esso. In caso affermativo, allora permetta semplicemente 
+all'assistente dell'azionamento ed aggiunga fotoricettore-richiamano alle opzioni locali 
+di S.E.E.R. Tankmodel la lima.
+
+--DUTCH--
+---------
+Het mengapparaat van de Tank of van de Silo dat u hebt geselecteerd heeft geen server van 
+builtin HTTP.
+
+Dit betekent dat wij niet zijn Levende pagina van de Status kunnen tonen.
+
+Gelieve te raadplegen het gebruikershandboek voor de Veranderlijke Aandrijving van de 
+Frequentie die bevoegdheden het geselecteerde Mengapparaat, om te bepalen als een server 
+van HTTP kan voor het worden aangezet of worden toegelaten. Als zo, toen laat eenvoudig 
+de server van de Aandrijving toe en voeg het Web-adres aan het Lokale dossier van Opties 
+toe S.E.E.R. Tankmodel.
+
+--POLISH--
+----------
+Zbiornik albo Agitator Silosu który wy ma dobierany nie ma wbudowany (właściwy) HTTP serwer. 
+
+Te środki co (żeby; który) nie możemy okazywać swój Żywy Stan numerować strony (strona). 
+
+Sprawiać przyjemność (proszę) radzą się użytkownikiem kierownictwa dla Zmiennej 
+Częstotliwości Przejażdżki który pełnomocnictwa dobierany Agitator, określać (rozstrzygać) 
+jeżeli HTTP serwer może jest 'włączył (włączony) albo umożliwiał dla tego. Jeżeli tak 
+(więc), potem łatwo umożliwiają serwerowi Przejażdżki i dodają adres sieci (tkanina) do
+S.E.E.R. Tankmodel Miejscowe Wybory rejestrować (fajł). 
+
+--PORTUGESE--
+-------------
+O agitador do tanque ou do silo que você selecionou não tem um usuário de HTTP do builtin.
+
+Isto significa que nós não podemos indicar sua página viva do status.
+
+Consulte por favor o manual do usuário para a movimentação variável da freqüência que pôr 
+o agitador selecionado, para determinar se um usuário de HTTP pode ser girado sobre ou 
+permitido para ele. Em caso afirmativo, então permita simplesmente o usuário da movimentação 
+e adicione correia-endereçam às opções locais de S.E.E.R. Tankmodel a lima.
+
+--RUSSIAN--
+-----------
+Агитатор бака или силосохранилища который вы выбирали не имеет сервера HTTP builtin.
+
+Это значит что мы не можем показать свою страницу в реальном маштабе времени состояния.
+
+Пожалуйста советуйте с руководством потребителя для переменного привода частоты который 
+приводит выбранного агитатора в действие, для того чтобы определить если сервер HTTP 
+можно включить или позволить для его. Если так, после этого просто включите сервера 
+привода и добавьте паутин-адресуйте к вариантам S.E.E.R. Tankmodel местным архив.
+
+------------------------------------------------
+Thank you.
+------------------------------------------------
+- S.E.E.R.
