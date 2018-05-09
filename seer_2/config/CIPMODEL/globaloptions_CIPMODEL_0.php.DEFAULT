@@ -1,0 +1,175 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+CIPMODEL GLOBAL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* MODEL DECLARATION */
+/* ------------------------------------------------------------------ */
+$seer_CIPMODEL_MODEL_COUNT = 7;
+$seer_CIPMODEL_MODEL_COUNT_ADJUSTED = $seer_CIPMODEL_MODEL_COUNT - 1;
+/*	-- how many tank models (instances) do we have */
+if ( $seer_CIPMODEL_MODEL_COUNT < 1 ) {
+	$seer_ENABLE_CIPMODEL = "NO";
+} else {
+	/* pass */
+}
+/*	-- sanity check */
+
+/* MODEL NAMING or IDENTIFICATION */
+/* ------------------------------------------------------------------ */
+$CIPMODEL_CODENAME = "v1 - Cleomenes";
+/*	-- codename for this model */
+/*	-- change only if model has been upgraded to a new version */
+
+$seer_FRIENDLYNAME_CIPMODEL[0] = "CIPMODEL: Ricotta Whey Cheese CIP";
+$seer_FRIENDLYNAME_CIPMODEL[1] = "CIPMODEL: Ricotta Whole Milk CIP";
+$seer_FRIENDLYNAME_CIPMODEL[2] = "CIPMODEL: Mozzarella Quad";
+$seer_FRIENDLYNAME_CIPMODEL[3] = "CIPMODEL: Ricotta Preblend CIP";
+$seer_FRIENDLYNAME_CIPMODEL[4] = "CIPMODEL: Separator CIP";
+$seer_FRIENDLYNAME_CIPMODEL[5] = "CIPMODEL: Truck Wash CIP";
+$seer_FRIENDLYNAME_CIPMODEL[6] = "CIPMODEL: Whey Plant CIP";
+/*	-- each instance needs a name */
+
+$seer_FRIENDLYNAME_CIPMODEL_STRIP_FOR_SHORT = 10;
+/*	-- what number of characters shall we strip from friendly names */
+/*	   to use them as sub-page titles or for short versions */
+
+$seer_CIPMODEL_FORMFILL_MODELS = "";
+$CIPMODEL_MODEL_CYCLE = 0;
+while ( $CIPMODEL_MODEL_CYCLE <= $seer_CIPMODEL_MODEL_COUNT_ADJUSTED ) {
+	$seer_CIPMODEL_FORMFILL_MODELS = $seer_CIPMODEL_FORMFILL_MODELS."<OPTION VALUE='".$CIPMODEL_MODEL_CYCLE."'>".$seer_FRIENDLYNAME_CIPMODEL[$CIPMODEL_MODEL_CYCLE];
+	$CIPMODEL_MODEL_CYCLE = $CIPMODEL_MODEL_CYCLE + 1;
+}
+/*	-- formfill model identities */
+
+
+/* UNITS OF MEASURE */
+/* ------------------------------------------------------------------ */
+$CIPMODEL_UM_FLOW = "gal/min";
+$CIPMODEL_UM_CONDUCTIVITY = "msm";
+$CIPMODEL_UM_VOLUME = "gal";
+$CIPMODEL_UM_TEMPERATURE = "deg F";
+$CIPMODEL_UM_WATER = "gal";
+$CIPMODEL_RANGE_TEMPERATURE_LOW = "0";
+$CIPMODEL_RANGE_TEMPERATURE_HIGH = "200";
+$CIPMODEL_RANGE_CONDUCTIVITY_LOW = "0";
+$CIPMODEL_RANGE_CONDUCTIVITY_HIGH = "10000";
+$CIPMODEL_RANGE_FLOW_LOW = "0";
+$CIPMODEL_RANGE_FLOW_HIGH = "200";
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$CIPMODEL_mysql_mod_openopc_TABLENAME = "CIPMODEL";
+/*	-- mysql table where tank data is stored */
+$CIPMODEL_ROWS_IN_WINDOWS = 300;
+/*	-- when displaying vertical bar plots or other data dumps, how many */
+/*	   rows shall be displayed in one dump */
+/*	   suggest 100 to 300 */
+
+/* MANUAL RECORD ENTRY */
+/* ------------------------------------------------------------------ */
+$CIPMODEL_MANUAL_RECORD_ENTRY_INTERVAL_MINUTES = 5;
+/*	-- in event of system outage, how often must manual entries be */
+/*	   recorded (in minutes) */
+
+/* SCANTIME MANIPULATION FOR REPORTING AND OTHER FORM RELATED ITEMS */
+/* ------------------------------------------------------------------ */
+$seer_mod_openopc_SCANTIME_for_CIPMODEL = 30;
+/*	-- sampling rate in seconds for tankmodel OPC devices */
+/*	-- MUST BE LESS THAN THE FOLLOWING TWO VARIABLES!!! */
+$seer_SCANTIME_TO_CONSIDER_NEW_RECORD = 90;
+$seer_COUNTEVERY_X_RECORD_CONSIDER_NEW_RECORD = floor($seer_SCANTIME_TO_CONSIDER_NEW_RECORD / ($seer_mod_openopc_SCANTIME_for_CIPMODEL * 2));
+/*	-- scan time in seconds (difference in time) between two records */
+/*	   before we consider the latter record a new one */
+/*	-- specifically for error and state report generation */
+$seer_SCANTIME_TO_CONSIDER_NEW_RECORD_SLOWCHANGE = 600;
+$seer_COUNTEVERY_X_RECORD_CONSIDER_NEW_RECORD_SLOWCHANGE = floor($seer_SCANTIME_TO_CONSIDER_NEW_RECORD_SLOWCHANGE / ($seer_mod_openopc_SCANTIME_for_CIPMODEL * 2));
+/*	-- scan time in seconds (difference in time) between two records */
+/*	   before we consider the latter record a new one */
+/*	-- specifically for activity report generation */
+$seer_ZEROTIMEFAULTS_LOG_AS_ONE_MINUTE = "NO";
+/*	-- if a fault or status has a time length of '0' seconds (because it */
+/*	   showed up on one scan but not on any subsequent onces), then give it a */
+/*	   time duration of 1 minute, regardless */
+/*	-- valid values are 'YES' or 'NO' */
+
+/* MODEL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/CIPMODEL/advancedoptions_CIPMODEL_0.php');
+
+?>

@@ -1,0 +1,381 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+S.E.E.R. GLOBAL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is Operating System agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* LANGUAGE OPTIONS FOR MULTILINGUAL INSTALLATIONS */
+/* ------------------------------------------------------------------ */
+$seer_ENABLE_MULTILINGUAL = "YES";
+/*	-- allows user to switch their language on the fly */
+$seer_DEFAULT_LANGUAGE = "ENGLISH";
+/*	-- declares the default system language */
+/*	-- SEER is initially displayed in this language until a */
+/*		user changes the language... if you have disabled */
+/*		multilingual support, then this is the ONLY system */
+/*		language */
+/*	-- AVAILABLE OPTIONS AT THIS TIME ARE... */
+/*	   -- YOU MUST ENABLE OR DISABLE EACH LANGUAGE WITH 'YES' OR 'NO' */
+$seer_ENABLE_MULTILINGUAL_LANG[0] = array("ENGLISH", "YES");
+/*		-- "ENGLISH" */
+$seer_ENABLE_MULTILINGUAL_LANG[1] = array("FRENCH", "YES");
+/*		-- "FRENCH" */
+$seer_ENABLE_MULTILINGUAL_LANG[2] = array("SPANISH", "YES");
+/*		-- "SPANISH" */
+/*	-- DISTANT FUTURE VALID OPTIONS ARE... */
+/*	   -- YOU MUST ENABLE OR DISABLE EACH LANGUAGE WITH 'YES' OR 'NO' */
+$seer_ENABLE_MULTILINGUAL_LANG[3] = array("ITALIAN", "NO");
+/*		-- "ITALIAN" */
+$seer_ENABLE_MULTILINGUAL_LANG[4] = array("GERMAN", "NO");
+/*		-- "GERMAN" */
+$seer_ENABLE_MULTILINGUAL_LANG[5] = array("DUTCH", "NO");
+/*		-- "DUTCH" */
+$seer_ENABLE_MULTILINGUAL_LANG[6] = array("POLISH", "NO");
+/*		-- "POLISH" */
+$seer_ENABLE_MULTILINGUAL_LANG[7] = array("PORTUGESE", "NO");
+/*		-- "PORTUGESE" */
+$seer_ENABLE_MULTILINGUAL_LANG[8] = array("RUSSIAN", "NO");
+/*		-- "RUSSIAN" */
+
+/* mod_openopc INTEGRATION */
+/* ------------------------------------------------------------------ */
+$mod_openopc_GWCOMMDIR = "/opt/mod_openopc_2/gwcomm";
+/*	-- path to mod_openopc installed gwcomm directory, without trailing slash */
+$mod_openopc_TEMPDIR = "/opt/mod_openopc_2/temp";
+/*	-- path to mod_openopc installed gwcomm directory, without trailing slash */
+$mod_openopc_WARN_FAULT_COUNT = 10;
+/*	-- number of system_faults to accept from BACKBONE before switching from */
+/*	   WARN state to ALARM-FAULTED state */
+/*	-- roughly 2 x 'number of active mod_openopc routines' is a good */
+/*	   starting point */
+$mod_openopc_OBSERVE_DST = "NO";
+/*	-- observe Daylight Savings Time (or any other clock-shifting time scheme) */
+/*	-- 'YES' or 'NO' are valid answers */
+
+/* MySQL DATABASE SETTINGS */
+/* ------------------------------------------------------------------ */
+$mysql_USE_INNODB_ENGINE = "YES";
+/*	-- 'YES' yields all tables with InnoDB engine */
+/*	-- 'NO' yields all tables with defaults MyISAM engine (or */
+/*	   whatever engine you have told MySQL to use by default */
+/*	-- "But isn't MyISAM faster?" */
+/*	-- -- arguably, yes.  However, InnoDB allows the database */
+/*	      administrator to do 'on the fly' backups without locking */
+/*	      the tables (InnoDB performs row-level locks) */
+
+/* MySQL INTEGRATION FOR mod_openopc */
+/* ------------------------------------------------------------------ */
+$mysql_mod_openopc_HOST = "127.0.0.1:3306";
+/*	-- database server... 'localhost' if local, or 'ipaddress:port' */
+/*	-- port is typically 3306 */
+/*	   if remote server */
+$mysql_mod_openopc_USER = "mysql";
+/*	-- database username */
+$mysql_mod_openopc_PASSWORD = "mysqlpassword";
+/*	-- database password */
+$mysql_mod_openopc_DBNAME = "mod_openopc";
+/*	-- name of your mod_openopc database target */
+$mysql_mod_openopc_RETENTION_YEARS = 3;
+
+/* MySQL INTEGRATION FOR S.E.E.R. */
+/* ------------------------------------------------------------------ */
+$mysql_seer_HOST = "127.0.0.1:3306";
+/*	-- database server... 'localhost' if local, or 'ipaddress:port' */
+/*	-- port is typically 3306 */
+/*	   if remote server */
+$mysql_seer_USER = "mysql";
+/*	-- database username */
+$mysql_seer_PASSWORD = "mysqlpassword";
+/*	-- database password */
+$mysql_seer_DBNAME = "seer";
+/*	-- name of your S.E.E.R. database target */
+
+/* MySQL CONTROL SETTINGS FOR S.E.E.R and mod_openopc */
+/* ------------------------------------------------------------------ */
+$seer_settings_ADMINALWAYSVIEWINSTALLOPTIONS = "NO";
+/*	-- allows administrators to view the 'create' and 'destroy' */
+/*	   dialogues for the core databases for both mod_openopc */
+/*	   and S.E.E.R. all the time. Suggested setting = "NO" */
+$seer_settings_FIRSTRUN = "NO";
+/*	-- if you have not run S.E.E.R. before, then set this to "YES" */
+/*	   so that you can use the control to install the S.E.E.R. */
+/*	   database from the 'settings' menu tab... which you can't */
+/*	   log-into yet because the user-table doesn't exist yet (it gets */
+/*	   built with the database).  Set this to "NO" after the default */
+/*	   administrator account is created. */
+
+/* apache CONTROL */
+/* ------------------------------------------------------------------ */
+$apache_WEBROOT = "/opt/apache_pages";
+/*	-- WEB ROOT WITHOUT THE TRAILING SLASH */
+/*	-- FOR EXAMPLE... "C:/apache_pages"  -OR-  "/opt/apache_pages" */
+$apache_seer_VERSION = "seer_2";
+/*	-- version must correspond to the apache web-rooted directory name */
+
+/* HMI FUNCTIONALITY SETTINGS */
+/* -------------------------- */
+$seer_BOUNCEBACKTIME = 30;
+/*	-- default auto refresh for pages */
+$seer_HMISQLSEARCHMINIMUMTIMEFRAME = 20;
+/*	-- default time, in minutes, that we seek to grab sql records for live hmi displays */
+/*	-- for example, if set to '5', then we'll just grab the last 5 minutes worth of records */
+/*	   to examine and process for a live display */
+
+/* ENVIRONMENT DECLARATION */
+/* ------------------------------------------------------------------ */
+/* -- TYPICALLY, A VERSION OF SEER WILL RUN ON A PRIMARY SERVER AS A */
+/*    PRODUCTION ENVIRONMENT, WHILE ANOTHER COPY RUNS ON A SECONDARY */
+/*    SERVER (or just a PC / workstation) AS A DEVELOPMENT ENVIRONMENT */
+/* -- THEY SHOULD HAVE DISTINCT NAMES */
+$seer_ENVIRONMENT_SERVER_MODE = "PRODUCTION";
+/*    -- choose 'PRODUCTION' or 'DEVELOPMENT' */
+
+/* wkhtmltopdf EXTERNAL EXECUTABLE FOR PDF GENERATION */
+/* ----------------------------------------------------------------- */
+/* -- YOU MUST INSTALL wkhtmltopdf on this server, and then provide the */
+/*    location for the executale binary here... */
+$seer_system_cmd_wkhtmltopdf = "/opt/wkhtmltopdf_static/wkhtmltopdf-amd64";
+
+/* HARDWARE MONITOR AND ID */
+/* ----------------------------------------------------------------- */
+/* -- section eliminated with integration of phpsysinfo v 3. */
+
+/* CORE MODELS */
+/* ------------------------------------------------------------------ */
+/*	-- ALL MODELS */
+/*	------------- */
+$seer_WORD_ID_CLEANING = "Cleaning";
+/*	-- word(s)s used in 'STATE' or 'MODE' or other declarations */
+/*	   which uniquely identify items to be displayed in a specific manner */
+/*	-- for example, gantt charts will show $seer_WORD_ID_CLEANING items in */
+/*	   green regardless of what color you specify when the function is called */
+/*	-- case sensitive */
+$seer_DEPT_ID_MAINTENANCE = "Maintenance";
+/*	-- word(s) used as the DEPARTMENT NAME of any USER who is setup as a */
+/*	   member of the MAINTENANCE department (mechanics / maintenance management */
+/*	   and others) */
+/*	-- this is critical, else any person in the MAINTENANCE department will
+/*	   have their access restricted based upon department (for any model whose */
+/*	   local options do not permit viewing by 'all' departments */
+/*	-- case sensitive */
+
+/*	-- TANK MODEL */
+/* 	------------- */
+$seer_ENABLE_TANKMODEL = "YES";
+/* 	-- globally enable the tankmodel */
+
+/*	-- SPF MODEL */
+/* 	------------- */
+$seer_ENABLE_SPFMODEL = "YES";
+/* 	-- globally enable the spfmodel */
+
+/*	-- CIP MODEL */
+/* 	------------- */
+$seer_ENABLE_CIPMODEL = "YES";
+/* 	-- globally enable the cipmodel */
+
+/*	-- BULK MODEL */
+/* 	------------- */
+$seer_ENABLE_BULKMODEL = "YES";
+/* 	-- globally enable the bulkmodel */
+
+/*	-- WARRIOR */
+/* 	---------- */
+$seer_ENABLE_WARRIOR = "YES";
+/* 	-- globally enable the WARRIOR module */
+
+/*	-- CHECKWEIGHER MODEL */
+/* 	--------------------- */
+$seer_ENABLE_CHECKWEIGHERMODEL = "YES";
+/* 	-- globally enable the checkweighermodel */
+
+/*	-- ATMOSPHERIC MODEL */
+/* 	--------------------- */
+$seer_ENABLE_ATMOSPHERICMODEL = "YES";
+/* 	-- globally enable the atmosphericmodel */
+
+/*	-- THIN CHART */
+/* 	------------- */
+$seer_ENABLE_THINCHART = "YES";
+/* 	-- globally enable the thinchart module */
+
+/*	-- TOUCH PANEL */
+/* 	-------------- */
+$seer_ENABLE_TOUCHPANEL = "YES";
+/* 	-- globally enable the touchpanel module */
+
+/*	-- TTY PERFORMANCE MODEL */
+/* 	------------------------ */
+$seer_ENABLE_TTYPERFORMANCEMODEL = "YES";
+/* 	-- globally enable the tty performance module */
+
+/* ABOUT YOU */
+/* ------------------------------------------------------------------ */
+$seer_ENVIRONMENT_FULLY_QUALIFIED_DOMAIN_NAME = "http://myserver.com";
+/*    	-- FQDN for this host. */
+$seer_ENVIRONMENT_SERVER_NAME = "MYSERVER";
+/*    -- give this instance a unique name... or Nickname. */
+$seer_DEFAULT_COMPANY_ID = "Your Corporation or Parent Company's Name";
+$seer_DEFAULT_SITE_ID = "Your Location's Name";
+/*	-- when adding new users, what is the default value for Company and Site */
+$seer_DATACOPYRIGHTHOLDER = "Your Company's Name or Legal Representative's Name";
+/*	-- who holds the copyright on machine data or other sensitive company information ? */
+/*	-- default copyright policy for data logged by the seer system */
+/*	   (SEER / mod_openopc have their own copyright which cannot be changed) */
+
+/* PEOPLE AND PLACES - S.E.E.R. SUPPORT AT YOUR SITE */
+/* ------------------------------------------------------------------ */
+
+/* 	ADMINISTRATOR #0 */
+/*	---------------- */
+$seer_ADMIN0 = "1st Admin";
+/*	-- name of your S.E.E.R. admin 0 */
+$seer_ADMIN0TITLE = "Administrator";
+/*	-- typically 'Administrator', 'Oversight', or 'Audit' */
+$seer_ADMIN0DIVISION = "My Location, of My Company";
+/*	-- company department or division of your S.E.E.R. admin 0 */
+$seer_ADMIN0EMAIL = "someone@somewhere.com";
+/*    -- email of your S.E.E.R. admin 0 */
+$seer_ADMIN0PHONE = "999-999-9999";
+/*	-- telephone number of your S.E.E.R. admin 0 */
+
+/* 	ADMINISTRATOR #1 */
+/*	---------------- */
+$seer_ADMIN1 = "2nd Admin";
+/*	-- name of your S.E.E.R. admin 1 */
+$seer_ADMIN1TITLE = "Administrator";
+/*	-- typically 'Administrator', 'Oversight', or 'Audit' */
+$seer_ADMIN1DIVISION = "My Location, of My Company";
+/*	-- company department or division of your S.E.E.R. admin 1 */
+$seer_ADMIN1EMAIL = "someone@somewhere.com";
+/*    -- email of your S.E.E.R. admin 1 */
+$seer_ADMIN1PHONE = "999-999-9999";
+/*	-- telephone number of your S.E.E.R. admin 1 */
+
+/* 	ADMINISTRATOR #2 */
+/*	---------------- */
+$seer_ADMIN2 = "Oversight Admin";
+/*	-- name of your S.E.E.R. admin 2 */
+$seer_ADMIN2TITLE = "Oversight";
+/*	-- typically 'Administrator', 'Oversight', or 'Audit' */
+$seer_ADMIN2DIVISION = "My Location, of My Company";
+/*	-- company department or division of your S.E.E.R. admin 2 */
+$seer_ADMIN2EMAIL = "someone@somewhere.com";
+/*    -- email of your S.E.E.R. admin 2 */
+$seer_ADMIN2PHONE = "999-999-9999";
+/*	-- telephone number of your S.E.E.R. admin 2 */
+
+/* PLUGINS AND THEMES */
+/* ------------------------------------------------------------------ */
+/* Plugins should be copied (as a folder) into...
+   /[seer_webroot]/plugins/
+
+   -- You may use multiple plugins at the same time.
+   -- To enable a plugin, simply observe the CASE SENSITIVE name of that
+      plugin's folder in the 'plugins' directory.  Now, add that name
+      to the array (list) below.
+	-- For example, if the plugin you wish to use is called 'my_reporter',
+           and it resides in the /[seer_webroot]/plugins/my_reporter/  directory,
+	   then you should update $seer_PLUGINS_TO_USE as follows...
+
+		$seer_PLUGINS_TO_USE = array(my_reporter);
+
+	-- Next, let's say you also want to use a plugin called 'reflection',
+	   update as follows...
+
+		$seer_PLUGINS_TO_USE = array(my_reporter,reflection);
+*/
+$seer_PLUGINS_TO_USE = array();
+
+/*   Themes should be copied (as a folder) into...
+     /[seer_webroot]/plugins/themes/
+
+   -- You may only use one theme at a time.
+   -- To enable a theme, enter the CASE SENSITIVE name of that theme's
+      folder in the 'plugins/themes' directory.
+	-- For example, if the theme you wish to use is called 'cool_blue',
+	   then drop the theme's contents into the folder...
+		/[seer_webroot]/plugins/themes/cool_blue/
+	   and then set $seer_THEME_TO_USE = "cool_blue";
+   -- Otherwise, set $seer_THEME_TO_USE = "default";
+*/
+$seer_THEME_TO_USE = "default";
+
+/* PROCEED */
+/* ------------------------------------------------------------------ */
+require($apache_WEBROOT.'/'.$apache_seer_VERSION.'/include/seer_initial_constants.php');
+
+?>

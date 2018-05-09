@@ -1,0 +1,176 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+CHECKWEIGHERMODEL GLOBAL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* MODEL DECLARATION */
+/* ------------------------------------------------------------------ */
+$seer_CHECKWEIGHERMODEL_MODEL_COUNT = 3;
+$seer_CHECKWEIGHERMODEL_MODEL_COUNT_ADJUSTED = $seer_CHECKWEIGHERMODEL_MODEL_COUNT - 1;
+/*	-- how many tank models (instances) do we have */
+if ( $seer_CHECKWEIGHERMODEL_MODEL_COUNT < 1 ) {
+	$seer_ENABLE_CHECKWEIGHERMODEL = "NO";
+} else {
+	/* pass */
+}
+/*	-- sanity check */
+
+/* MODEL NAMING or IDENTIFICATION */
+/* ------------------------------------------------------------------ */
+/* $CHECKWEIGHERMODEL_CODENAME = "v1 - Eudamidas"; */
+$CHECKWEIGHERMODEL_CODENAME = "v2 - Leda";
+/*	-- codename for this model */
+/*	-- change only if model has been upgraded to a new version */
+
+$seer_FRIENDLYNAME_CHECKWEIGHERMODEL[0] = "CHECKWEIGHERMODEL: Ricotta Packaging";
+$seer_FRIENDLYNAME_CHECKWEIGHERMODEL[1] = "CHECKWEIGHERMODEL: Mozzarella Packaging";
+$seer_FRIENDLYNAME_CHECKWEIGHERMODEL[2] = "CHECKWEIGHERMODEL: Shred Packaging";
+/*	-- each instance needs a name */
+
+$seer_FRIENDLYNAME_CHECKWEIGHERMODEL_STRIP_FOR_SHORT = 19;
+/*	-- what number of characters we strip from friendly names */
+/*	   to use them as sub-page titles or for short versions */
+
+$seer_CHECKWEIGHERMODEL_FORMFILL_MODELS = "";
+$CHECKWEIGHERMODEL_MODEL_CYCLE = 0;
+while ( $CHECKWEIGHERMODEL_MODEL_CYCLE <= $seer_CHECKWEIGHERMODEL_MODEL_COUNT_ADJUSTED ) {
+	$seer_CHECKWEIGHERMODEL_FORMFILL_MODELS = $seer_CHECKWEIGHERMODEL_FORMFILL_MODELS."<OPTION VALUE='".$CHECKWEIGHERMODEL_MODEL_CYCLE."'>".$seer_FRIENDLYNAME_CHECKWEIGHERMODEL[$CHECKWEIGHERMODEL_MODEL_CYCLE];
+	$CHECKWEIGHERMODEL_MODEL_CYCLE = $CHECKWEIGHERMODEL_MODEL_CYCLE + 1;
+}
+/*	-- formfill model identities */
+
+/* DEFAULT UNITS OF MEASURE */
+/* ------------------------------------------------------------------ */
+$CHECKWEIGHERMODEL_UM_MASS = "oz.";
+/*	-- this is the standard unit of measure for mass that you are recording */
+/*	   for each checkweigher */
+$CHECKWEIGHERMODEL_UM_MASS_LARGE_QUANTITIES = "lb.";
+/*	-- when representing large quantities or large totals, we will use */
+/*	   a larger unit of meausre, such as "pounds" or "kilo-grams" rather than */
+/*         the standard unit of measure (such as "ounces" or "grams") */
+$CHECKWEIGHERMODEL_UM_MASS_LARGE_QUANTITIES_SCALE_FACTOR = 0.0625;
+/*	-- multilply a value, in "_UM_MASS" by this scale factor in order to */
+/*	   get a value in "_UM_MASS_LARGE_QUANTITIES" */
+/*	-- for example, if _UM_MASS is "grams", and "_UM_MASS_LARGE_QUANTITIES" */
+/*	   is "kilograms", then this scale factor will be 0.001 */
+$CHECKWEIGHERMODEL_UM_UNIT = "ea.";
+
+/* S.E.E.R. and SYPHON FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$CHECKWEIGHERMODEL_mysql_mod_openopc_TABLENAME = "CHECKWEIGHERMODEL";
+/*	-- mysql table where checkweigher runtime data is stored */
+$CHECKWEIGHERMODEL_mysql_mod_openopc_TABLENAME_RECIPE = "CHECKWEIGHERMODEL_RECIPE";
+/*	-- mysql table where checkweigher recipe data is stored */
+$CHECKWEIGHERMODEL_mysql_mod_openopc_TABLENAME_SYPHON = "CHECKWEIGHERMODEL_SYPHON";
+/*	-- mysql table where checkweigher active running recipe for each */
+/*         machine (scale) is stored; syphon will pull this data for use as a */
+/*         when exporting data to mysql table $CHECKWEIGHERMODEL_mysql_mod_openopc_TABLENAME */
+$CHECKWEIGHERMODEL_ROWS_IN_WINDOWS = 300;
+/*	-- when displaying charts over time, how many points should we pull to display */
+/*	   for the report -- suggest 300 */
+$CHECKWEIGHERMODEL_ROWS_IN_WINDOWS_LARGE = 2000;
+/*	-- when displaying individual item weights for report 1, how many items shall we list */
+/*	   for the LARGE SAMPLE method -- suggest 2000 */
+$CHECKWEIGHERMODEL_NAME_OF_NULL_RECIPE = "NONE";
+/*	-- when the operator wishes to choose a checkweigher recipe of "off", "none", */
+/*         "line down", or in some other way basically indicate that the machine is NOT */
+/*         running, then the recipe will be flagged with this name. In English, we will */
+/*         use "NONE" or "LINE_DOWN". */
+/*      -- NOTE! you MUST not use 'spaces'; instead use underscores... for example: */
+/*            - use "LINE_DOWN" instead of "LINE DOWN" */
+$CHECKWEIGHERMODEL_NAME_OF_NULL_OPERATOR = "unassigned";
+/*	-- the first time you run the checkweigher model on a line or machine, there will be */
+/*	   a period of time (before someone logs into SEER and selects a recipe for the line) */
+/*	   where the line will have no operator ever have been assigned to it. */
+/*	-- this is what we shall call that 'unassigned' operator. */
+
+/* S.E.E.R. PSUEDO-WORM RECIPE DB CONTROL */
+/* ------------------------------------------------------------------ */
+$CHECKWEIGHERMODEL_WORMIFY_RECIPE_DB = "YES";
+/*	-- when set to 'YES', the CHECKWEIGHERMODEL_RECIPE database is */
+/*         only allowed to have recipes created (added) to it; you will not */
+/*         be able to modify or remove recipes from it */
+/*      -- it is recommended to set this to 'NO' while you are setting up */
+/*         your initial recipe list... then, once you are sure you've got */
+/*         everything the way you want it, lock it down with 'YES' */
+
+/* MODEL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/CHECKWEIGHERMODEL/advancedoptions_CHECKWEIGHERMODEL_0.php');
+
+?>

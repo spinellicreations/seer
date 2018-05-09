@@ -1,0 +1,240 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+SPFMODEL GLOBAL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* MODEL DECLARATION */
+/* ------------------------------------------------------------------ */
+$seer_SPFMODEL_MODEL_COUNT = 3;
+$seer_SPFMODEL_MODEL_COUNT_ADJUSTED = $seer_SPFMODEL_MODEL_COUNT - 1;
+/*	-- how many tank models (instances) do we have */
+if ( $seer_SPFMODEL_MODEL_COUNT < 1 ) {
+	$seer_ENABLE_SPFMODEL = "NO";
+} else {
+	/* pass */
+}
+/*	-- sanity check */
+
+/* MODEL NAMING or IDENTIFICATION */
+/* ------------------------------------------------------------------ */
+$SPFMODEL_CODENAME = "v1 - Gorgo";
+/*	-- codename for this model */
+/*	-- change only if model has been upgraded to a new version */
+
+$seer_FRIENDLYNAME_SPFMODEL[0] = "SPFMODEL: Receiving Tank Room";
+$seer_FRIENDLYNAME_SPFMODEL[1] = "SPFMODEL: Whey Ricotta Production";
+$seer_FRIENDLYNAME_SPFMODEL[2] = "SPFMODEL: Whey Plant RO Room";
+/*	-- each instance needs a name */
+
+$seer_FRIENDLYNAME_SPFMODEL_STRIP_FOR_SHORT = 10;
+/*	-- what number of characters shall we strip from friendly names */
+/*	   to use them as sub-page titles or for short versions */
+
+$seer_SPFMODEL_FORMFILL_MODELS = "";
+$SPFMODEL_MODEL_CYCLE = 0;
+while ( $SPFMODEL_MODEL_CYCLE <= $seer_SPFMODEL_MODEL_COUNT_ADJUSTED ) {
+	$seer_SPFMODEL_FORMFILL_MODELS = $seer_SPFMODEL_FORMFILL_MODELS."<OPTION VALUE='".$SPFMODEL_MODEL_CYCLE."'>".$seer_FRIENDLYNAME_SPFMODEL[$SPFMODEL_MODEL_CYCLE];
+	$SPFMODEL_MODEL_CYCLE = $SPFMODEL_MODEL_CYCLE + 1;
+}
+/*	-- formfill model identities */
+
+/* MACHINE TYPES */
+/* ------------------------------------------------------------------ */
+$SPFMODEL_MACHINE_TYPE[10] = "SEPARATOR";
+$SPFMODEL_MACHINE_TYPE[11] = "SEPARATOR SELF-CLEANING";
+$SPFMODEL_MACHINE_TYPE[20] = "CLARIFIER";
+$SPFMODEL_MACHINE_TYPE[21] = "CLARIFIER SELF-CLEANING";
+$SPFMODEL_MACHINE_TYPE[30] = "ULTRA FILTRATION";
+$SPFMODEL_MACHINE_TYPE[31] = "ULTRA FILTRATION SELF-CLEANING";
+$SPFMODEL_MACHINE_TYPE[40] = "REVERSE OSSMOSIS";
+$SPFMODEL_MACHINE_TYPE[41] = "REVERSE OSSMOSIS SELF-CLEANING";
+$SPFMODEL_MACHINE_TYPE[50] = "PASTEURIZER";
+$SPFMODEL_MACHINE_TYPE[51] = "PASTEURIZER SELF-CLEANING";
+/*	-- machine type descriptions */
+/*	-- should not need to be changed, but you may wish to */
+/*	   translate the same values into your own language */
+
+/* UNITS OF MEASURE */
+/* ------------------------------------------------------------------ */
+$SPFMODEL_UM_MASS = "lb";
+$SPFMODEL_UM_VOLUME = "gal";
+$SPFMODEL_UM_WATER = "gal";
+$SPFMODEL_UM_TURBIDITY = "%";
+$SPFMODEL_RANGE_TURBIDITY_LOW = "0";
+$SPFMODEL_RANGE_TURBIDITY_HIGH = "100";
+$SPFMODEL_UM_FLOW = "gpm";
+$SPFMODEL_RANGE_FLOW_LOW = "0";
+$SPFMODEL_RANGE_FLOW_HIGH = "400";
+$SPFMODEL_UM_PRESSURE = "psi";
+$SPFMODEL_RANGE_PRESSURE_LOW = "0";
+$SPFMODEL_RANGE_PRESSURE_HIGH = "100";
+$SPFMODEL_UM_TEMPERATURE = "deg F";
+$SPFMODEL_RANGE_TEMPERATURE_LOW = "0";
+$SPFMODEL_RANGE_TEMPERATURE_HIGH = "200";
+$SPFMODEL_UM_POWER = "kWh";
+$SPFMODEL_UM_POWER_RATE = "kW";
+$SPFMODEL_UM_ROTATIONAL_SPEED = "rpm";
+$SPFMODEL_CONCENTRATION_RATIO_DIVIDED_BY = "100";
+
+/* TOTALIZER METER ROLLOVER POINT */
+$SPFMODEL_TOTALIZER_ROLLOVER = 30000;
+/*	-- a totalizer ultimately must be reset at some point */
+/*	   so all of our totalizers will auto-reset to zero after they */
+/*	   have reached a maximum value of this point. */
+/*	-- this includes ONLY the following totals... */
+/*	--	- POWER_TOTAL */
+/*	--	- SOURCE_TOTAL */
+/*	--	- DESTINATION1_TOTAL */
+/*	-- 	- DESTINATION2_TOTAL */
+/*	-- NOTE - this number should be sufficiently large such that */
+/*		  it offers meaningful cycling.  For example, it must */
+/*		  be large enough that it will not ROLLOVER in less time */
+/*		  than it takes to run an individual data scan from the machine */
+/*	-- NOTE - 30,000 is a good number to use, as it allows the use of 8 bit */
+/*		  INTEGER registers for totalizer storage where the maximum value */
+/*		  allowd in such a register is 32,767 */
+
+/* TOTALIZER DEBOUNCE and SLOP CLEANUP */
+$SPFMODEL_TOTALIZER_DEBOUNCE_SLOP_CLEANUP = 45;
+/*	-- if a totalizer reverses direction a small amount but in a short time */
+/*	   then we do not want to consider it to have completed a revolution */
+/*	-- rather, we'll just ignore the change */
+/*	-- value is in seconds... suggested value is 1 1/2 times the sample rate */
+/*	   example... 30 second sample rate would yield a setting value of '45' */
+
+/* ALARM AND STATE CHANGE CONTROL */
+$SPFMODEL_ALARM_CONDITION_HOT_CYCLE_COUNT = 4;
+/*	-- when an alarm occurs, often it will be 'on' for a minute, */
+/*	   then 'off' for 30 seconds, then 'on' for another 3 minutes, */
+/*	   and so on... we want to consider such an instance as one */
+/*	   single alarm. */
+/*	-- so, this variable is a time-window, measured in multiples */
+/*	   of the sample rate (if your data gather sample rate is 30 */
+/*	   seconds, then a value of '5' will be 150 seconds, or 2 1/2 minutes) */
+/*	-- this is the amount of time where if an alarm is picked up more */
+/*	   than once during such a window, the alarm will show up as a single */
+/*	   occurance. */
+/*	-- suggest using a value that is equal to 2 minutes divided by sample rate */
+/*	   example... 2 min / 30 seconds = 4 */
+
+/* MANUAL RECORD ENTRY */
+/* ------------------------------------------------------------------ */
+$SPFMODEL_MANUAL_RECORD_ENTRY_INTERVAL_MINUTES_OTHER = 5;
+/*	-- in event of system outage, how often must manual entries be */
+/*	   recorded (in minutes) for non-pasteurizers */
+$SPFMODEL_MANUAL_RECORD_ENTRY_INTERVAL_MINUTES_PASTEURIZE = 1;
+/*	-- in event of system outage, how often must manual entries be */
+/*	   recorded (in minutes) for pasteurizers */
+
+/* SCANTIME MANIPULATION FOR REPORTING AND OTHER FORM RELATED ITEMS */
+/* ------------------------------------------------------------------ */
+$seer_mod_openopc_SCANTIME_for_SPFMODEL = 30;
+/*	-- sampling rate in seconds for tankmodel OPC devices */
+/*	-- MUST BE LESS THAN THE FOLLOWING TWO VARIABLES!!! */
+$seer_SCANTIME_TO_CONSIDER_NEW_RECORD = 120;
+$seer_COUNTEVERY_X_RECORD_CONSIDER_NEW_RECORD = floor($seer_SCANTIME_TO_CONSIDER_NEW_RECORD / ($seer_mod_openopc_SCANTIME_for_SPFMODEL * 2));
+/*	-- scan time in seconds (difference in time) between two records */
+/*	   before we consider the latter record a new one */
+/*	-- specifically for error and state report generation */
+$seer_SCANTIME_TO_CONSIDER_NEW_RECORD_SLOWCHANGE = 600;
+$seer_COUNTEVERY_X_RECORD_CONSIDER_NEW_RECORD_SLOWCHANGE = floor($seer_SCANTIME_TO_CONSIDER_NEW_RECORD_SLOWCHANGE / ($seer_mod_openopc_SCANTIME_for_SPFMODEL * 2));
+/*	-- scan time in seconds (difference in time) between two records */
+/*	   before we consider the latter record a new one */
+/*	-- specifically for activity report generation */
+$seer_ZEROTIMEFAULTS_LOG_AS_ONE_MINUTE = "NO";
+/*	-- if a fault or status has a time length of '0' seconds (because it */
+/*	   showed up on one scan but not on any subsequent onces), then give it a */
+/*	   time duration of 1 minute, regardless */
+/*	-- valid values are 'YES' or 'NO' */
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$SPFMODEL_mysql_mod_openopc_TABLENAME = "SPFMODEL";
+/*	-- mysql table where machine data is stored */
+$SPFMODEL_COUNT_TOTAL_ALL_ACTIVE_MODELS = 11;
+/*	-- total number of machines, in all SPF models currently activated */
+$SPFMODEL_ROWS_IN_WINDOWS = 300;
+/*	-- when displaying vertical bar plots or other data dumps, how many */
+/*	   rows shall be displayed in one dump */
+/*	   suggest 100 to 300 */
+
+/* MODEL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/SPFMODEL/advancedoptions_SPFMODEL_0.php');
+
+?>

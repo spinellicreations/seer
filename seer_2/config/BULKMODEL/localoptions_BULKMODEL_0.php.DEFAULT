@@ -1,0 +1,176 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+BULKMODEL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* ACCESS */
+/* ------------------------------------------------------------------ */
+$MODEL_INSTANCE_DEPT_ALLOW_ALL = "YES";
+/*	-- level 7, 5, and 4 users can be restricted to their department only. */
+/*	   Although level 6 and above 3 cannot be.  The majority of your */
+/*	   users will be level 7 ('user level') users.  That said, */
+/*	   valid options are "YES" to allow all department level 7 */
+/*	   users to interact with this machine control or report, or */
+/*	   "NO" to restrict by DEPARTMENT NAME */
+$MODEL_INSTANCE_DEPT_ARRAY = array("ALL");
+/*	-- an array of ALLOWED departments. */
+/*	-- if and only if you have set the 'ALLOW_ALL' value to "YES", */
+/*	   then you should set this value to "(ALL)" */
+/*	-- otherwise, comma and space separate allowed departments. */
+/*	   For example... */
+/*	       $MODEL_INSTANCE_DEPT_ARRAY = array("my_dept", "your_dept", "some-other-dept"); */
+
+/* BULK DECLARATIONS */
+/* ------------------------------------------------------------------ */
+$BULKMODEL_COUNT = 7;
+/*	-- how many BULK items do you have */
+
+$BULKMODEL_PRESET_PREFIX = "CHEM_BLDG_";
+/* single example... $BULKMODEL_PRESET_PREFIX = "MILK_"; */
+/* multiple example... $BULKMODEL_PRESET_PREFIX = "MILK_%' OR BULKNAME LIKE 'CREAM_"; */
+/*	-- necessary for performing efficient queries... */
+/*	   especially if you have multiple instances of this */
+/*	   model running.  all tanks should have */
+/*	   the same prefix, of if multiple prefixes, see above. */
+
+$BULKMODEL_NAME[0] = "CHEM_BLDG_XY-12";
+$BULKMODEL_NAME[1] = "CHEM_BLDG_ENVIROCID";
+$BULKMODEL_NAME[2] = "CHEM_BLDG_ENFORCE";
+$BULKMODEL_NAME[3] = "CHEM_BLDG_LIQUID-90";
+$BULKMODEL_NAME[4] = "CHEM_BLDG_CAUSTIC";
+$BULKMODEL_NAME[5] = "CHEM_BLDG_VINEGAR-EAST";
+$BULKMODEL_NAME[6] = "CHEM_BLDG_VINEGAR-WEST";
+/* 	-- each BULK item needs a name */
+/*	-- add as many up to 'BULKMODEL_COUNT' - 1 */
+
+/* UNITS OF MEASURE */
+/* ------------------------------------------------------------------ */
+$BULKMODEL_UM_THISMODEL = "gal";
+/*	-- UNIT OF MEASURE for volume calculations */
+
+/* DEBOUNCE - ERROR CORRECTION - AND SUCH */
+/* ------------------------------------------------------------------ */
+$BULKMODEL_APPRECIABLE_CHANGE_PERCENT = 5;
+/*	-- inventory changes (minus) must be greater than this percentage */
+/*	   in order to be considered valid... this eliminates sensor 'jitter' */
+/*	   and the associated error */
+/*	-- NOTE - this value should be at least 5 percent (typically). */
+$BULKMODEL_APPRECIABLE_CHANGE_ERROR = 15;
+/*	-- inventory changes (minus) this percentage will be considered sensor */
+/*	   error. This value should be at least 2 times the value of BULKMODEL_APPRECIABLE_CHANGE_PERCENT */
+/*	-- this will help quench bad clculations due to network downtime or sensor outage */
+/*	-- NOTE - this value should be at lest 3x the above, but is best refined via TRIAL AND ERROR */
+$BULKMODEL_APPRECIABLE_CHANGE_PERCENT_RESTOCK = 15;
+/*	-- inventory changes (plus) must be greater than this percentage */
+/*	   in order to be considered valid... */
+/*	-- NOTE - this value should be at least 15 percent (typically), and should be */
+/*		  greter than or equal to BULKMODEL_APPRECIABLE_CHANGE_ERROR */
+$BULKMODEL_DEBOUNCE_CYCLES_REQUIRED = 5;
+/*	-- how many sample cycles must show an appreciable change in inventory level */
+/*	   in the plus or minus direction in order to consider the change valid. */
+/*	-- for example, if your data is recorded every 30 seconds, and you set */
+/*	   this variable to 5, then an appreciable change in level must be present */
+/*	   for 5 * 30 seconds = 150 seconds (or 2 1/2 minutes) in order to be considered */
+/*	   as a valid inventory change */
+/*	-- NOTE -- this value should equate to roughly 5 (at LEAST), but is best determined via */
+/*		   TRIAL AND ERROR */
+
+/* FILL POINTS */
+/* ------------------------------------------------------------------ */
+$BULKMODEL_FILL_POINT_EMPTY = 10;
+$BULKMODEL_FILL_POINT_REORDER = 35;
+$BULKMODEL_FILL_POINT_FULL = 60;
+/*	-- EMPTY ... below this PERCENTAGE POINT, consider inventory empty */
+/*	-- REORDER ... below this PERCENTAGE POINT, reorder stock */
+/*	-- FULL ... above this PERCENTAGE POINT, consider inventory fully stocked */
+
+/* mod_openopc FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$BULKMODEL_mod_openopc_WRITEDAEMON = "thundercracker_hmi";
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$BULKMODEL_SUBPAGETITLE = $seer_FRIENDLYNAME_BULKMODEL[0];
+$BULKMODEL_SUBPAGETITLE = substr_replace($BULKMODEL_SUBPAGETITLE, "", 0, $seer_FRIENDLYNAME_BULKMODEL_STRIP_FOR_SHORT);
+/*	-- friendly sub page title for identification of multiple models */
+
+/* COMMON-LOCAL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/BULKMODEL/advanced_local-common_BULKMODEL.php');
+
+?>

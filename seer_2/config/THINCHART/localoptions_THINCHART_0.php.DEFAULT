@@ -1,0 +1,263 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+THINCHART OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* ACCESS */
+/* ------------------------------------------------------------------ */
+$MODEL_INSTANCE_DEPT_ALLOW_ALL = "YES";
+/*	-- level 7, 5, and 4 users can be restricted to their department only. */
+/*	   Although level 6 and above 3 cannot be.  The majority of your */
+/*	   users will be level 7 ('user level') users.  That said, */
+/*	   valid options are "YES" to allow all department level 7 */
+/*	   users to interact with this machine control or report, or */
+/*	   "NO" to restrict by DEPARTMENT NAME */
+$MODEL_INSTANCE_DEPT_ARRAY = array("ALL");
+/*	-- an array of ALLOWED departments. */
+/*	-- if and only if you have set the 'ALLOW_ALL' value to "YES", */
+/*	   then you should set this value to "(ALL)" */
+/*	-- otherwise, comma and space separate allowed departments. */
+/*	   For example... */
+/*	       $MODEL_INSTANCE_DEPT_ARRAY = array("my_dept", "your_dept", "some-other-dept"); */
+
+/* CHART DECLARATIONS */
+/* ------------------------------------------------------------------ */
+$THINCHART_COUNT = 2;
+/*	-- how many CHART items do you have */
+
+$THINCHART_PRESET_PREFIX = "MILK_SILO_";
+/* single example... $THINCHART_PRESET_PREFIX = "MILK_"; */
+/* multiple example... $THINCHART_PRESET_PREFIX = "MILK_%' OR CHARTNAME LIKE 'CREAM_"; */
+/*	-- necessary for performing efficient queries... */
+/*	   especially if you have multiple instances of this */
+/*	   model running.  all tanks should have */
+/*	   the same prefix, of if multiple prefixes, see above. */
+
+$THINCHART_NAME[0] = "MILK_SILO_1";
+$THINCHART_NAME[1] = "MILK_SILO_2";
+/* 	-- each CHART item needs a name */
+/*	-- add as many up to 'THINCHART_COUNT' - 1 */
+
+/* PEN NAMES */
+/* ------------------------------------------------------------------ */
+$THINCHART_PENNAME_[0][1] = "Level";
+$THINCHART_PENNAME_[0][2] = "Temperature";
+$THINCHART_PENNAME_[0][3] = "None";
+$THINCHART_PENNAME_[0]['EVENT'] = "CIP Active";
+$THINCHART_PENNAME_[1][1] = "Level";
+$THINCHART_PENNAME_[1][2] = "Temperature";
+$THINCHART_PENNAME_[1][3] = "None";
+$THINCHART_PENNAME_[1]['EVENT'] = "CIP Active";
+/*	-- each CHART item must have a name for each of it's PENS */
+/*	-- set the name to whatever you wish, preferably something not */
+/*	   too many characters long (less than 20 should display well) */
+/*	-- if the PEN is not used, then you should set the */
+/*	   PENNAME to something indicative, such as "None" or "N/A".
+
+/* UNITS OF MEASURE */
+/* ------------------------------------------------------------------ */
+$THINCHART_PENUM_[0][1] = "pct.";
+$THINCHART_PENUM_[0][2] = "deg. F";
+$THINCHART_PENUM_[0][3] = "n/a";
+$THINCHART_PENUM_[1][1] = "pct.";
+$THINCHART_PENUM_[1][2] = "deg. F";
+$THINCHART_PENUM_[1][3] = "n/a";
+/*	-- each CHART item must have a UNIT of MEASURE associated with */
+/*	   each PEN's analog measurement. */
+/*	-- if the PEN is not used, then you should set the */
+/*	   PENUM to something indicative but very short, such as "n/a" or */
+/*	   "nan". */
+/*	-- EVENT pens do not use a UNIT, since they are not */
+/*	   analog quantities, but simply events or alarms. */
+/*	---------- */
+/*	-- WARNING */
+/*	---------- */
+/*	-- EVENT pens do not accept analog input data.  Instead, simply */
+/*	   record a "0" or a "1" (indicating "Event is Not Active" or "Event */
+/*	   Is Active") into the database. */
+/*	-------------- */
+/*	-- UNUSED PENS */
+/*	-------------- */
+/*	-- for unused pens, simply record a "0" into the database on each */
+/*	   scan (utilizing your device's "SEER NULL BIT" is adviseable). */
+
+/* CHART RANGE */
+/* ------------------------------------------------------------------ */
+/* -- LOW */
+$THINCHART_PENRANGE_LOW[0][1] = 0;
+$THINCHART_PENRANGE_LOW[0][2] = 5;
+$THINCHART_PENRANGE_LOW[0][3] = 0;
+$THINCHART_PENRANGE_LOW[1][1] = 0;
+$THINCHART_PENRANGE_LOW[1][2] = 5;
+$THINCHART_PENRANGE_LOW[1][3] = 0;
+/* -- HIGH */
+$THINCHART_PENRANGE_HIGH[0][1] = 100;
+$THINCHART_PENRANGE_HIGH[0][2] = 185;
+$THINCHART_PENRANGE_HIGH[0][3] = 100;
+$THINCHART_PENRANGE_HIGH[1][1] = 100;
+$THINCHART_PENRANGE_HIGH[1][2] = 185;
+$THINCHART_PENRANGE_HIGH[1][3] = 100;
+/*	-- each CHART item must have a chart plot LOW RANGE and a */
+/*	   chart plot HIGH RANGE.  Think of this as a speedometer on */
+/*	   a vehicle... do you want it to read from "0 to 100" or "0 to 60" */
+/*	   or some other value... where "0" is the low and "60" is the high */
+/*	   in our example speedometer scenario. */
+/*	-- EVENT pens do not use a RANGE, since they are not */
+/*	   analog quantities, but simply events or alarms. */
+/*	-- if the PEN is not used, then you should set the */
+/*	   PENRANGE_LOW to "0" and PENRANGE_HIGH to "100". */
+/*	   ---------- */
+/*	-- WARNING !! */
+/*	   ---------- */
+/*	   PEN1, PEN2, and PEN3 have a data storage capability of a 7 place */
+/*	   floating point number with 2 decimal digits... the result of that is */
+/*	   a numerical range of "-99,999.99" through "0.00" to "99,999.99".  So */
+/*	   if you need to represent your ranges in thousands or millions (k-something) */
+/*	   or (M-something), then do so. */
+
+/* PEN COLOR CODES */
+/* ------------------------------------------------------------------ */
+$THINCHART_PEN1_COLOR = "STANDARD";
+/*	-- PEN1 */
+$THINCHART_PEN2_COLOR = "STANDARD";
+/*	-- PEN2 */
+$THINCHART_PEN3_COLOR = "STANDARD";
+/*	-- PEN3 */
+/*	-- pen colors must one of the following, typed exactly... */
+/*	   -- "black" */
+/*	   -- "blue" */
+/*	   -- "green" */
+/*	   -- "red" */
+/*	   -- "yellow" */
+/*	   -- "default" */
+/*	   -- "STANDARD" */
+/*	   -- -- a value of "STANDARD" will pull the colors defined in the */
+/*		 advanced_options_THINCHART_0 file.  This allows you to set */
+/*		 a standard for all of your THINCHART local instances, and */
+/*		 make color adjustments that affect all instances simultaneously */
+/*		 if you so desire. */
+
+/* CHART RESOLUTION */
+/* ------------------------------------------------------------------ */
+$THINCHART_ROWS_IN_WINDOWS = 500;
+/*	-- when displaying vertical bar plots or other data dumps, how many */
+/*	   rows shall be displayed in one dump */
+/*	   suggest 100 to 500 */
+
+/* FULL MODEL DISPLAY */
+/* ------------------------------------------------------------------ */
+$THINCHART_ALLOW_USER_SELECT_FULL_MODEL = "NO";
+/* 	-- should we allow the user to select "ALL" for report_0, and thereby */
+/*	   display each machine in this localoptions file on the same report ? */
+/*	-- "YES" or "NO" */
+/*	-- typically this will be "NO" unless you have a specific reason to */
+/*	   require it. */
+
+/* NOTIFICATIONS */
+/* ------------------------------------------------------------------ */
+$THINCHART_NOTIFICATION[0] = "None";
+/*	-- notifications (such as alarms, operator notifications, or */
+/*	   any other machine data - ie. production steps, cleaning steps */
+/*	   or the like). */
+
+/* MANUAL RECORD ENTRY */
+/* ------------------------------------------------------------------ */
+$THINCHART_MANUAL_RECORD_ENTRY_INTERVAL_MINUTES = 15;
+/*	-- time interval (in minutes) where manual records must be entered */
+/*	   in the event that communication or the system is down for any */
+/*	   given time. */
+/*	-- this list is shared by ALL charts within the localoptions */
+/*	   set. */
+/*	-- $THINCHART_NOTIFICATION_[0] should always be set to "None" or */
+/*	   "No Alarms", or something of that nature... */
+
+/* mod_openopc FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$THINCHART_mod_openopc_WRITEDAEMON = "thundercracker_hmi";
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$THINCHART_SUBPAGETITLE = $seer_FRIENDLYNAME_THINCHART[0];
+$THINCHART_SUBPAGETITLE = substr_replace($THINCHART_SUBPAGETITLE, "", 0, $seer_FRIENDLYNAME_THINCHART_STRIP_FOR_SHORT);
+/*	-- friendly sub page title for identification of multiple models */
+
+/* COMMON-LOCAL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/THINCHART/advanced_local-common_THINCHART.php');
+
+?>

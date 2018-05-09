@@ -1,0 +1,517 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+TANKMODEL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* ACCESS */
+/* ------------------------------------------------------------------ */
+$MODEL_INSTANCE_DEPT_ALLOW_ALL = "NO";
+/*	-- level 7, 5, and 4 users can be restricted to their department only. */
+/*	   Although level 6 and above 3 cannot be.  The majority of your */
+/*	   users will be level 7 ('user level') users.  That said, */
+/*	   valid options are "YES" to allow all department level 7 */
+/*	   users to interact with this machine control or report, or */
+/*	   "NO" to restrict by DEPARTMENT NAME */
+$MODEL_INSTANCE_DEPT_ARRAY = array("RSPC", "Whey Plant", "Ricotta Production");
+/*	-- an array of ALLOWED departments. */
+/*	-- if and only if you have set the 'ALLOW_ALL' value to "YES", */
+/*	   then you should set this value to "(ALL)" */
+/*	-- otherwise, comma and space separate allowed departments. */
+/*	   For example... */
+/*	       $MODEL_INSTANCE_DEPT_ARRAY = array("my_dept", "your_dept", "some-other-dept"); */
+
+/* TANK DECLARATIONS */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_COUNT = 13;
+/*	-- how many tanks do you have */
+
+$TANKMODEL_PRESET_PREFIX = "MILK_%' OR SILONAME LIKE 'CREAM_";
+/* single example... $TANKMODEL_PRESET_PREFIX = "MILK_"; */
+/* multiple example... $TANKMODEL_PRESET_PREFIX = "MILK_%' OR SILONAME LIKE 'CREAM_"; */
+/*	-- necessary for performing efficient queries... */
+/*	   especially if you have multiple instances of this */
+/*	   model running.  all tanks should have */
+/*	   the same prefix, of if multiple prefixes, see above. */
+/*	-- the same time of single or multiple form will be applied */
+/*	   later for agitator preset names. */
+
+$TANKMODEL_NAME[0] = "MILK_SILO_1";
+$TANKMODEL_NAME[1] = "MILK_SILO_2";
+$TANKMODEL_NAME[2] = "MILK_SILO_3";
+$TANKMODEL_NAME[3] = "MILK_SILO_4";
+$TANKMODEL_NAME[4] = "MILK_SILO_5";
+$TANKMODEL_NAME[5] = "MILK_SILO_6";
+$TANKMODEL_NAME[6] = "MILK_SILO_7";
+$TANKMODEL_NAME[7] = "MILK_SILO_8";
+$TANKMODEL_NAME[8] = "MILK_SILO_9";
+$TANKMODEL_NAME[9] = "CREAM_TANK_10";
+$TANKMODEL_NAME[10] = "CREAM_TANK_11";
+$TANKMODEL_NAME[11] = "CREAM_TANK_12";
+$TANKMODEL_NAME[12] = "CREAM_TANK_13";
+/* 	-- each tank needs a name */
+/*	-- add as many up to 'TANKMODEL_COUNT' - 1 */
+
+/* PRODUCT IDENTIFICATION */
+/* ---------------------- */
+$TANKMODEL_PLC_LEAF_PRODUCT[0] = "XXX[MILK_SILO_1]YYYN17:20";	
+$TANKMODEL_PLC_LEAF_PRODUCT[1] = "XXX[MILK_SILO_2]YYYN17:21";
+$TANKMODEL_PLC_LEAF_PRODUCT[2] = "XXX[MILK_SILO_3]YYYN17:22";
+$TANKMODEL_PLC_LEAF_PRODUCT[3] = "XXX[MILK_SILO_4]YYYN17:23";
+$TANKMODEL_PLC_LEAF_PRODUCT[4] = "XXX[MILK_SILO_5]YYYN17:24";
+$TANKMODEL_PLC_LEAF_PRODUCT[5] = "XXX[MILK_SILO_6]YYYN17:25";
+$TANKMODEL_PLC_LEAF_PRODUCT[6] = "XXX[MILK_SILO_7]YYYN17:26";
+$TANKMODEL_PLC_LEAF_PRODUCT[7] = "XXX[MILK_SILO_8]YYYN17:27";
+$TANKMODEL_PLC_LEAF_PRODUCT[8] = "XXX[MILK_SILO_9]YYYN17:28";
+$TANKMODEL_PLC_LEAF_PRODUCT[9] = "XXX[CREAM_TANK_10]YYYN17:29";
+$TANKMODEL_PLC_LEAF_PRODUCT[10] = "XXX[CREAM_TANK_11]YYYN17:30";
+$TANKMODEL_PLC_LEAF_PRODUCT[11] = "XXX[CREAM_TANK_12]YYYN17:31";
+$TANKMODEL_PLC_LEAF_PRODUCT[12] = "XXX[CREAM_TANK_13]YYYN17:32";
+/* 	-- each tank needs a PLC leaf for product identification */
+/*	-- add as many up to 'TANKMODEL_COUNT' - 1 */
+
+/* PRODUCT DENSITY */
+/* --------------- */
+$TANKMODEL_PLC_LEAF_DENSITY[0] = "XXX[MILK_SILO_1]YYYF11:90";
+$TANKMODEL_PLC_LEAF_DENSITY[1] = "XXX[MILK_SILO_2]YYYF11:91";
+$TANKMODEL_PLC_LEAF_DENSITY[2] = "XXX[MILK_SILO_3]YYYF11:92";
+$TANKMODEL_PLC_LEAF_DENSITY[3] = "XXX[MILK_SILO_4]YYYF11:93";
+$TANKMODEL_PLC_LEAF_DENSITY[4] = "XXX[MILK_SILO_5]YYYF11:94";
+$TANKMODEL_PLC_LEAF_DENSITY[5] = "XXX[MILK_SILO_6]YYYF11:95";
+$TANKMODEL_PLC_LEAF_DENSITY[6] = "XXX[MILK_SILO_7]YYYF11:96";
+$TANKMODEL_PLC_LEAF_DENSITY[7] = "XXX[MILK_SILO_8]YYYF11:97";
+$TANKMODEL_PLC_LEAF_DENSITY[8] = "XXX[MILK_SILO_9]YYYF11:98";
+$TANKMODEL_PLC_LEAF_DENSITY[9] = "XXX[CREAM_TANK_10]YYYF11:99";
+$TANKMODEL_PLC_LEAF_DENSITY[10] = "XXX[CREAM_TANK_11]YYYF11:100";
+$TANKMODEL_PLC_LEAF_DENSITY[11] = "XXX[CREAM_TANK_12]YYYF11:101";
+$TANKMODEL_PLC_LEAF_DENSITY[12] = "XXX[CREAM_TANK_13]YYYF11:102";
+/* 	-- each tank needs a PLC leaf for product density */
+/*	-- add as many up to 'TANKMODEL_COUNT' - 1 */
+
+/* AGITATION CONTROL */
+/* ----------------- */
+$TANKMODEL_UTILIZE_AGITATOR_CONTROL = "YES";
+/*	-- utilize control of variable speed agitators */
+
+if ( $TANKMODEL_UTILIZE_AGITATOR_CONTROL == "YES" ) {
+
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[0] = "XXX[MILK_SILO_1]YYYN9:220";
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[1] = "XXX[MILK_SILO_2]YYYN9:221";
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[2] = "XXX[MILK_SILO_3]YYYN9:222";
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[3] = "XXX[MILK_SILO_4]YYYN9:223";
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[4] = "XXX[MILK_SILO_5]YYYN9:224";
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[5] = "XXX[MILK_SILO_6]YYYN9:225";
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[6] = "XXX[MILK_SILO_7]YYYN9:226";
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[7] = "XXX[MILK_SILO_8]YYYN9:227";
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[8] = "XXX[MILK_SILO_9]YYYN9:228";
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[9] = "NONE";
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[10] = "NONE";
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[11] = "NONE";
+	$TANKMODEL_PLC_LEAF_AGITATOR_STATE[12] = "NONE";
+	/* 	-- each tank needs a PLC leaf for agitator state control */
+	/*	-- add as many up to 'TANKMODEL_COUNT' - 1 */
+	/*	-- you only have to list addresses for tanks which actually have */
+	/*		agitation control and are a member of a group */
+	/*		below ... other tanks should have NONE for value */
+
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[0] = "XXX[MILK_SILO_1]YYYN10:70";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[1] = "XXX[MILK_SILO_2]YYYN10:71";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[2] = "XXX[MILK_SILO_3]YYYN10:72";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[3] = "XXX[MILK_SILO_4]YYYN10:73";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[4] = "XXX[MILK_SILO_5]YYYN10:74";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[5] = "XXX[MILK_SILO_6]YYYN10:75";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[6] = "XXX[MILK_SILO_7]YYYN10:76";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[7] = "XXX[MILK_SILO_8]YYYN10:77";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[8] = "XXX[MILK_SILO_9]YYYN10:78";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[9] = "NONE";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[10] = "NONE";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[11] = "NONE";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_ON_LEVEL[12] = "NONE";
+	/* 	-- each tank needs a PLC leaf for agitator turn on level */
+	/*	-- add as many up to 'TANKMODEL_COUNT' - 1 */
+	/*	-- you only have to list addresses for tanks which actually have */
+	/*		agitation control and are a member of a group */
+	/*		below ... other tanks should have NONE for value */
+
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[0] = "XXX[MILK_SILO_1]YYYN10:60";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[1] = "XXX[MILK_SILO_2]YYYN10:61";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[2] = "XXX[MILK_SILO_3]YYYN10:62";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[3] = "XXX[MILK_SILO_4]YYYN10:63";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[4] = "XXX[MILK_SILO_5]YYYN10:64";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[5] = "XXX[MILK_SILO_6]YYYN10:65";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[6] = "XXX[MILK_SILO_7]YYYN10:66";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[7] = "XXX[MILK_SILO_8]YYYN10:67";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[8] = "XXX[MILK_SILO_9]YYYN10:68";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[9] = "NONE";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[10] = "NONE";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[11] = "NONE";
+	$TANKMODEL_PLC_LEAF_AGITATOR_SPEED_OFF_LEVEL[12] = "NONE";
+	/* 	-- each tank needs a PLC leaf for agitator speed off level */
+	/*	-- add as many up to 'TANKMODEL_COUNT' - 1 */
+	/*	-- you only have to list addresses for tanks which actually have */
+	/*		agitation control and are a member of a group */
+	/*		below ... other tanks should have double quotes for value */
+
+	/* AGITATOR GROUP 1 */
+	/* ---------------- */
+	$TANKMODEL_FRIENDLYNAME_AGITATOR_GROUP1 = "(G1) RSPC_SILO_ROOM";
+	$TANKMODEL_MEMBERS_AGITATOR_GROUP1 = 9;
+	/*	-- how many tanks do you have in this group */
+
+	$TANKMODEL_AGITATOR_GROUP1[0] = 0;
+	$TANKMODEL_AGITATOR_GROUP1[1] = 1;
+	$TANKMODEL_AGITATOR_GROUP1[2] = 2;
+	$TANKMODEL_AGITATOR_GROUP1[3] = 3;
+	$TANKMODEL_AGITATOR_GROUP1[4] = 4;
+	$TANKMODEL_AGITATOR_GROUP1[5] = 5;
+	$TANKMODEL_AGITATOR_GROUP1[6] = 6;
+	$TANKMODEL_AGITATOR_GROUP1[7] = 7;
+	$TANKMODEL_AGITATOR_GROUP1[8] = 8;
+	/*	-- which tanks are a mamber of the group1 */
+	/*	-- use index values from array $TANKMODEL_NAME */
+
+	$TANKMODEL_AGITATOR_BUILTINHTTP_GROUP1[0] = "http://10.20.248.160";
+	$TANKMODEL_AGITATOR_BUILTINHTTP_GROUP1[1] = "http://10.20.248.161";
+	$TANKMODEL_AGITATOR_BUILTINHTTP_GROUP1[2] = "http://10.20.248.162";
+	$TANKMODEL_AGITATOR_BUILTINHTTP_GROUP1[3] = "http://10.20.248.163";
+	$TANKMODEL_AGITATOR_BUILTINHTTP_GROUP1[4] = "http://10.20.248.164";
+	$TANKMODEL_AGITATOR_BUILTINHTTP_GROUP1[5] = "http://10.20.248.165";
+	$TANKMODEL_AGITATOR_BUILTINHTTP_GROUP1[6] = "http://10.20.248.166";
+	$TANKMODEL_AGITATOR_BUILTINHTTP_GROUP1[7] = "http://10.20.248.167";
+	$TANKMODEL_AGITATOR_BUILTINHTTP_GROUP1[8] = "http://10.20.248.168";
+	/*	-- which tank agitator variable frequency drives have a builtin http server */
+	/*	-- -- specify the http server web address, for example... */
+	/*	-- -- -- $TANKMODEL_AGITATOR_BUILTINHTTP_GROUP1[X] = "http://10.1.1.5"; */
+	/*	-- -- all variable frequency drives that DONOT have a builtin http server */
+	/*	      must use the default warning page for their address, as shown below... */
+	/*	-- -- -- $TANKMODEL_AGITATOR_BUILTINHTTP_GROUP1[X] = "./include/core_models/TANKMODEL_seer_hmi_0-A_DNE.txt"; */
+
+	$TANKMODEL_AGITATOR_MFGMODEL_GROUP1[0] = "Yaskawa V-1000 [CIMR-VU4-A009]";
+	$TANKMODEL_AGITATOR_MFGMODEL_GROUP1[1] = "Yaskawa V-1000 [CIMR-VU4-A009]";
+	$TANKMODEL_AGITATOR_MFGMODEL_GROUP1[2] = "Yaskawa V-1000 [CIMR-VU4-A009]";
+	$TANKMODEL_AGITATOR_MFGMODEL_GROUP1[3] = "Yaskawa V-1000 [CIMR-VU4-A009]";
+	$TANKMODEL_AGITATOR_MFGMODEL_GROUP1[4] = "Yaskawa V-1000 [CIMR-VU4-A009]";
+	$TANKMODEL_AGITATOR_MFGMODEL_GROUP1[5] = "Yaskawa V-1000 [CIMR-VU4-A009]";
+	$TANKMODEL_AGITATOR_MFGMODEL_GROUP1[6] = "Yaskawa V-1000 [CIMR-VU4-A009]";
+	$TANKMODEL_AGITATOR_MFGMODEL_GROUP1[7] = "Yaskawa V-1000 [CIMR-VU4-A009]";
+	$TANKMODEL_AGITATOR_MFGMODEL_GROUP1[8] = "Yaskawa V-1000 [CIMR-VU4-A009]";
+	/*	-- manufacturer and modelname for each tank's agitator variable frequency drive */
+
+	$TANKMODEL_AGITATOR_STATE_GROUP1_COUNT = 6;
+	/*	-- how many tanks do you have */
+	
+	$TANKMODEL_AGITATOR_STATE_GROUP1[0] = "G1_OUT_OF_SERVICE";
+	$TANKMODEL_AGITATOR_STATE_GROUP1[1] = "G1_CIP";
+	$TANKMODEL_AGITATOR_STATE_GROUP1[2] = "G1_MILK_1";
+	$TANKMODEL_AGITATOR_STATE_GROUP1[3] = "G1_BLEND_1";
+	$TANKMODEL_AGITATOR_STATE_GROUP1[4] = "G1_BLEND_2";
+	$TANKMODEL_AGITATOR_STATE_GROUP1[5] = "G1_BLEND_3";
+
+	$TANKMODEL_AGITATOR_STATE_GROUP1_LOGIC[0] = 1;
+	$TANKMODEL_AGITATOR_STATE_GROUP1_LOGIC[1] = 2;
+	$TANKMODEL_AGITATOR_STATE_GROUP1_LOGIC[2] = 4;
+	$TANKMODEL_AGITATOR_STATE_GROUP1_LOGIC[3] = 8;
+	$TANKMODEL_AGITATOR_STATE_GROUP1_LOGIC[4] = 16;
+	$TANKMODEL_AGITATOR_STATE_GROUP1_LOGIC[5] = 32;
+
+	/* GLOBAL TO ALL TANK AGITATORS */
+	/* ---------------------------- */
+	$TANKMODEL_AGITATOR_SPEED_MIN = 20;
+	$TANKMODEL_AGITATOR_SPEED_MAX = 80;
+	/*	-- min and max agitator speeds in percent */
+	
+	$TANKMODEL_AGITATOR_ON_LEVEL_MIN = 2;
+	$TANKMODEL_AGITATOR_ON_LEVEL_MAX = 50;
+	/*	-- min and max turn on level in percent */
+
+	$TANKMODEL_AGITATOR_OFF_LEVEL_MIN = 2;
+	$TANKMODEL_AGITATOR_OFF_LEVEL_MAX = 50;
+	/*	-- min and max turn off level in percent */
+
+	/* PRESET SPEEDS FOR AGITATORS */
+	/* --------------------------- */
+	$TANKMODEL_AGITATOR_PRESET_SPEED_SETTINGS_PER_PRESET = 2;
+	$TANKMODEL_AGITATOR_PRESET_SPEED_PRESET_COUNT = 4;
+	/*	-- how many presets do you have */
+
+	$TANKMODEL_AGITATOR_PRESET_PREFIX = "G1_";
+	/*	-- necessary for performing efficient queries... */
+	/*	   especially if you have multiple instances of this */
+	/*	   model running.  all presets in this group should have */
+	/*	   the same prefix. */
+
+	$TANKMODEL_AGITATOR_PRESET_NAME[0] = "G1_BLEND_1";
+	$TANKMODEL_AGITATOR_PRESET_NAME[1] = "G1_BLEND_2";
+	$TANKMODEL_AGITATOR_PRESET_NAME[2] = "G1_BLEND_3";
+	$TANKMODEL_AGITATOR_PRESET_NAME[3] = "G1_MILK_1";
+
+	$TANKMODEL_AGITATOR_PRESET_SPEED_NAME[0] = "G1_BLEND_1_HIGH";
+	$TANKMODEL_AGITATOR_PRESET_SPEED_NAME[1] = "G1_BLEND_1_LOW";
+	$TANKMODEL_AGITATOR_PRESET_SPEED_NAME[2] = "G1_BLEND_2_HIGH";
+	$TANKMODEL_AGITATOR_PRESET_SPEED_NAME[3] = "G1_BLEND_2_LOW";
+	$TANKMODEL_AGITATOR_PRESET_SPEED_NAME[4] = "G1_BLEND_3_HIGH";
+	$TANKMODEL_AGITATOR_PRESET_SPEED_NAME[5] = "G1_BLEND_3_LOW";
+	$TANKMODEL_AGITATOR_PRESET_SPEED_NAME[6] = "G1_MILK_1_HIGH";
+	$TANKMODEL_AGITATOR_PRESET_SPEED_NAME[7] = "G1_MILK_1_LOW";
+	
+	$TANKMODEL_PLC_LEAF_AGITATOR_PRESET_SPEED[0] = "XXX[G1_BLEND_1]YYYN10:121";
+	$TANKMODEL_PLC_LEAF_AGITATOR_PRESET_SPEED[1] = "XXX[G1_BLEND_1]YYYN10:131";
+	$TANKMODEL_PLC_LEAF_AGITATOR_PRESET_SPEED[2] = "XXX[G1_BLEND_2]YYYN10:122";
+	$TANKMODEL_PLC_LEAF_AGITATOR_PRESET_SPEED[3] = "XXX[G1_BLEND_2]YYYN10:132";
+	$TANKMODEL_PLC_LEAF_AGITATOR_PRESET_SPEED[4] = "XXX[G1_BLEND_3]YYYN10:123";
+	$TANKMODEL_PLC_LEAF_AGITATOR_PRESET_SPEED[5] = "XXX[G1_BLEND_3]YYYN10:133";
+	$TANKMODEL_PLC_LEAF_AGITATOR_PRESET_SPEED[6] = "XXX[G1_MILK_1]YYYN10:120";
+	$TANKMODEL_PLC_LEAF_AGITATOR_PRESET_SPEED[7] = "XXX[G1_MILK_1]YYYN10:130";
+	
+} else {
+	/* continue */
+}
+
+/* LOCKDOWN DUE TO LACK OF CLEANING */
+/* -------------------------------- */
+$TANKMODEL_UTILIZE_LOCKDOWN_CLEANING = "YES";
+/*	-- utilize control for cleaning required since time */
+	
+if ( $TANKMODEL_UTILIZE_LOCKDOWN_CLEANING == "YES" ) {
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[0] = "XXX[MILK_SILO_1]YYYB3:35/0";	
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[1] = "XXX[MILK_SILO_2]YYYB3:35/1";
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[2] = "XXX[MILK_SILO_3]YYYB3:35/2";
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[3] = "XXX[MILK_SILO_4]YYYB3:35/3";
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[4] = "XXX[MILK_SILO_5]YYYB3:35/4";
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[5] = "XXX[MILK_SILO_6]YYYB3:35/5";
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[6] = "XXX[MILK_SILO_7]YYYB3:35/6";
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[7] = "XXX[MILK_SILO_8]YYYB3:35/7";
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[8] = "XXX[MILK_SILO_9]YYYB3:35/8";
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[9] = "XXX[CREAM_TANK_10]YYYB3:35/9";
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[10] = "XXX[CREAM_TANK_11]YYYB3:35/10";
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[11] = "XXX[CREAM_TANK_12]YYYB3:35/11";
+	$TANKMODEL_PLC_LEAF_RELEASE_LOCKDOWN_CLEANING[12] = "XXX[CREAM_TANK_13]YYYB3:35/12";
+	/* 	-- each tank needs a PLC leaf for lockdown cleaning release */
+	/*	-- add as many up to 'TANKMODEL_COUNT' - 1 */
+
+	/*	LOGIC TO RELEAE FROM LOCKDOWN CLEANING */
+	/*	-------------------------------------- */
+	$TANKMODEL_RELEASE_LOCKDOWN_CLEANING_LOGIC = 1;
+	/*	-- plc logic value to write in order to release lockdown */
+
+	/*	WARNING POINTS FOR CLEANING LOCKDOWN */
+	/*	------------------------------------ */
+	$TANKMODEL_LOCKDOWN_CLEANING_WARNING = 48;
+	$TANKMODEL_LOCKDOWN_CLEANING_ALARM = 64;
+	$TANKMODEL_LOCKDOWN_CLEANING_LOCKED = 72;
+	/*	-- we read 'time_since_clean' in hours, so */
+	/*		how many hours should each warning point be at */
+
+} else {
+	/* 	IF NOT USING TANK LOCKDOWN CONTROL, THEN YOU MUST DECLARE YOUR VALUES */
+	/*	TO AT LEAST WARN THE USER OF A TANK THAT HAS BEEN TOO LONG SINCE CLEANED */
+	/*	------------------------------------ */
+	$TANKMODEL_LOCKDOWN_CLEANING_WARNING = 48;
+	$TANKMODEL_LOCKDOWN_CLEANING_ALARM = 64;
+	$TANKMODEL_LOCKDOWN_CLEANING_LOCKED = 72;
+	/*	-- we read 'time_since_clean' in hours, so */
+	/*		how many hours should each warning point be at */
+}
+
+/* ALARMS FOR TANKS */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_ALARM_COUNT = 6;
+/*	-- how many tank products do you have */
+
+$TANKMODEL_ALARM[0] = "No Alarms Present";
+$TANKMODEL_ALARM[1] = "Inlet Valve Manually On";
+$TANKMODEL_ALARM[2] = "Inlet Valve Manually Off";
+$TANKMODEL_ALARM[3] = "Outlet Valve Manually On";
+$TANKMODEL_ALARM[4] = "Outlet Valve Manually Off";
+$TANKMODEL_ALARM[5] = "Too Long Since Tank has Been Cleaned";
+/*	-- literal alarm values */
+
+/* PRODUCTS STORED IN TANKS */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_PRODUCT_COUNT = 37;
+/*	-- how many tank products do you have */
+$TANKMODEL_PRODUCT_COUNT_ADJUSTED = $TANKMODEL_PRODUCT_COUNT - 1;
+/*	-- this offsets by 1 for array construction */
+/*	-- do not edit */
+
+$TANKMODEL_PRODUCT[0] = "Empty";
+$TANKMODEL_PRODUCT[1] = "Other";
+$TANKMODEL_PRODUCT[2] = "City_Water";
+$TANKMODEL_PRODUCT[3] = "Raw_Milk";
+$TANKMODEL_PRODUCT[4] = "Milk_Retentate";
+$TANKMODEL_PRODUCT[5] = "Sweet_Cream";
+$TANKMODEL_PRODUCT[6] = "Whey_Cream";
+$TANKMODEL_PRODUCT[7] = "UF_Permeate";
+$TANKMODEL_PRODUCT[8] = "Mozzarella_Whey";
+$TANKMODEL_PRODUCT[9] = "Ricotta_Whey";
+$TANKMODEL_PRODUCT[10] = "Starter";
+$TANKMODEL_PRODUCT[11] = "Mozz_Blend_WMHM_Retail";
+$TANKMODEL_PRODUCT[12] = "Mozz_Blend_PSHM_Retail";
+$TANKMODEL_PRODUCT[13] = "Mozz_Blend_WMLM_Retail";
+$TANKMODEL_PRODUCT[14] = "Mozz_Blend_PSLM_Retail";
+$TANKMODEL_PRODUCT[15] = "Mozz_Blend_WMLM_Bulk";
+$TANKMODEL_PRODUCT[16] = "Mozz_Blend_WMLM_Premium";
+$TANKMODEL_PRODUCT[17] = "Mozz_Blend_PSLM_Bulk";
+$TANKMODEL_PRODUCT[18] = "Mozz_Blend_PSLM_Premium";
+$TANKMODEL_PRODUCT[19] = "Mozz_Blend_Provolone";
+$TANKMODEL_PRODUCT[20] = "Mozz_Blend_Reduced_Fat";
+$TANKMODEL_PRODUCT[21] = "R-Milk_Blend_Whole_Milk";
+$TANKMODEL_PRODUCT[22] = "R-Milk_Blend_Part_Skim";
+$TANKMODEL_PRODUCT[23] = "R-Milk_Blend_Red";
+$TANKMODEL_PRODUCT[24] = "R-Milk_Blend_Green";
+$TANKMODEL_PRODUCT[25] = "R-Whey_Blend_Black";
+$TANKMODEL_PRODUCT[26] = "R-Whey_Blend_WM_Deli";
+$TANKMODEL_PRODUCT[27] = "R-Whey_Blend_Special";
+$TANKMODEL_PRODUCT[28] = "R-Whey_Blend_Recipe_22";
+$TANKMODEL_PRODUCT[29] = "R-Whey_Blend_Recipe_24";
+$TANKMODEL_PRODUCT[30] = "R-Whey_Blend_Low_Fat";
+$TANKMODEL_PRODUCT[31] = "R-Whey_Blend_Part_Skim_Deli";
+$TANKMODEL_PRODUCT[32] = "R-Whey_Blend_Fat_Free";
+$TANKMODEL_PRODUCT[33] = "Skimmed_Milk";
+$TANKMODEL_PRODUCT[34] = "RBST_Free_Milk";
+$TANKMODEL_PRODUCT[35] = "RBST_Skim_Milk";
+$TANKMODEL_PRODUCT[36] = "Brine_Water_-_Etc.";
+/*	-- literal product values */
+
+/* STATE OF TANK */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_STATE_COUNT = 6;
+/*	-- how many tank states do you have */
+
+$TANKMODEL_STATE[0] = "Idle";
+$TANKMODEL_STATE[1] = "Cleaning";
+$TANKMODEL_STATE[2] = "Filling";
+$TANKMODEL_STATE[3] = "Emptying";
+$TANKMODEL_STATE[4] = "Filling & Emptying";
+$TANKMODEL_STATE[5] = "Dirty & Unlocked";
+$TANKMODEL_STATE[6] = "Agitating Blend";
+/*	-- literal state values */
+
+/* SOURCES FOR TANKS */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_SOURCE_COUNT = 13;
+/*	-- how many tank sources do you have */
+
+$TANKMODEL_SOURCE[0] = "OFF";
+$TANKMODEL_SOURCE[1] = "RECEIVING BAY #1";
+$TANKMODEL_SOURCE[2] = "RECEIVING BAY #2";
+$TANKMODEL_SOURCE[3] = "RECEIVING BAY #3";
+$TANKMODEL_SOURCE[4] = "CIP SILO";
+$TANKMODEL_SOURCE[5] = "CREAM TANKS";
+$TANKMODEL_SOURCE[6] = "U.F. HTST";
+$TANKMODEL_SOURCE[7] = "MILK HTST";
+$TANKMODEL_SOURCE[8] = "TRIBLENDER";
+$TANKMODEL_SOURCE[9] = "STANDARDIZE";
+$TANKMODEL_SOURCE[10] = "SOURCE NUMBER 11";
+$TANKMODEL_SOURCE[11] = "SOURCE NUMBER 12";
+$TANKMODEL_SOURCE[12] = "SOURCE NUMBER 13";
+/*	-- literal source values */
+
+/* DESTINATIONS FOR TANKS */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_DESTINATION_COUNT = 13;
+/*	-- how many tank destinations do you have */
+
+$TANKMODEL_DESTINATION[0] = "OFF";
+$TANKMODEL_DESTINATION[1] = "MILK HTST";
+$TANKMODEL_DESTINATION[2] = "U.F. HTST";
+$TANKMODEL_DESTINATION[3] = "TRANSFER";
+$TANKMODEL_DESTINATION[4] = "CIP SILO";
+$TANKMODEL_DESTINATION[5] = "REAR SILOS";
+$TANKMODEL_DESTINATION[6] = "PROCESSORS";
+$TANKMODEL_DESTINATION[7] = "KETTLES";
+$TANKMODEL_DESTINATION[8] = "TRIBLENDER";
+$TANKMODEL_DESTINATION[9] = "STANDARDIZE";
+$TANKMODEL_DESTINATION[10] = "DEST NUMBER 11";
+$TANKMODEL_DESTINATION[11] = "DEST NUMBER 12";
+/*	-- literal destination values */
+
+/* mod_openopc FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_mod_openopc_WRITEDAEMON = "thundercracker_hmi";
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_SUBPAGETITLE = $seer_FRIENDLYNAME_TANKMODEL[0];
+$TANKMODEL_SUBPAGETITLE = substr_replace($TANKMODEL_SUBPAGETITLE, "", 0, $seer_FRIENDLYNAME_TANKMODEL_STRIP_FOR_SHORT);
+/*	-- friendly sub page title for identification of multiple models */
+
+/* COMMON-LOCAL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/TANKMODEL/advanced_local-common_TANKMODEL.php');
+
+?>

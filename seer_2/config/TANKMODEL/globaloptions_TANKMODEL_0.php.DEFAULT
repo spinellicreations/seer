@@ -1,0 +1,171 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+TANKMODEL GLOBAL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* MODEL DECLARATION */
+/* ------------------------------------------------------------------ */
+$seer_TANKMODEL_MODEL_COUNT = 3;
+$seer_TANKMODEL_MODEL_COUNT_ADJUSTED = $seer_TANKMODEL_MODEL_COUNT - 1;
+/*	-- how many tank models (instances) do we have */
+if ( $seer_TANKMODEL_MODEL_COUNT < 1 ) {
+	$seer_ENABLE_TANKMODEL = "NO";
+} else {
+	/* pass */
+}
+/*	-- sanity check */
+
+/* MODEL NAMING or IDENTIFICATION */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_CODENAME = "v2 - Lycurgus";
+/*	-- codename for this model */
+/*	-- change only if model has been upgraded to a new version */
+
+$seer_FRIENDLYNAME_TANKMODEL[0] = "TANKMODEL: RSPC Milk Receiving Tank Room";
+$seer_FRIENDLYNAME_TANKMODEL[1] = "TANKMODEL: Ricotta Preblend Silo Room";
+$seer_FRIENDLYNAME_TANKMODEL[2] = "TANKMODEL: Whey Plant RO Silo Room";
+/*	-- each instance needs a name */
+
+$seer_FRIENDLYNAME_TANKMODEL_STRIP_FOR_SHORT = 11;
+/*	-- what number of characters we strip from friendly names */
+/*	   to use them as sub-page titles or for short versions */
+
+$seer_TANKMODEL_FORMFILL_MODELS = "";
+$TANKMODEL_MODEL_CYCLE = 0;
+while ( $TANKMODEL_MODEL_CYCLE <= $seer_TANKMODEL_MODEL_COUNT_ADJUSTED ) {
+	$seer_TANKMODEL_FORMFILL_MODELS = $seer_TANKMODEL_FORMFILL_MODELS."<OPTION VALUE='".$TANKMODEL_MODEL_CYCLE."'>".$seer_FRIENDLYNAME_TANKMODEL[$TANKMODEL_MODEL_CYCLE];
+	$TANKMODEL_MODEL_CYCLE = $TANKMODEL_MODEL_CYCLE + 1;
+}
+/*	-- formfill model identities */
+
+/* UNITS OF MEASURE */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_UM_DENSITY = "lb/gal";
+$TANKMODEL_UM_MASS = "lb";
+$TANKMODEL_UM_VOLUME = "gal";
+$TANKMODEL_UM_TEMPERATURE = "deg F";
+$TANKMODEL_RANGE_TEMPERATURE_LOW = "0";
+$TANKMODEL_RANGE_TEMPERATURE_HIGH = "180";
+
+/* SPECIAL TANK STATES */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_SPECIALSTATE_CIP = "Cleaning";
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_mysql_mod_openopc_TABLENAME = "TANKMODEL";
+/*	-- mysql table where tank data is stored */
+$TANKMODEL_mysql_mod_openopc_TABLENAME_AGITATOR = "TANKMODEL_AGITATOR";
+/*	-- mysql table where tank agitator data is stored */
+$TANKMODEL_ROWS_IN_WINDOWS = 400;
+/*	-- when displaying vertical bar plots or other data dumps, how many */
+/*	   rows shall be displayed in one dump */
+/*	   suggest 100 to 300 */
+
+/* MANUAL RECORD ENTRY */
+/* ------------------------------------------------------------------ */
+$TANKMODEL_MANUAL_RECORD_ENTRY_INTERVAL_MINUTES = 15;
+/*	-- in event of system outage, how often must manual entries be */
+/*	   recorded (in minutes) */
+
+/* SCANTIME MANIPULATION FOR REPORTING AND OTHER FORM RELATED ITEMS */
+/* ------------------------------------------------------------------ */
+$seer_mod_openopc_SCANTIME_for_TANKMODEL = 30;
+/*	-- sampling rate in seconds for tankmodel OPC devices */
+/*	-- MUST BE LESS THAN THE FOLLOWING TWO VARIABLES!!! */
+$seer_SCANTIME_TO_CONSIDER_NEW_RECORD = 90;
+$seer_COUNTEVERY_X_RECORD_CONSIDER_NEW_RECORD = floor($seer_SCANTIME_TO_CONSIDER_NEW_RECORD / ($seer_mod_openopc_SCANTIME_for_TANKMODEL * 2));
+/*	-- scan time in seconds (difference in time) between two records */
+/*	   before we consider the latter record a new one */
+/*	-- specifically for error and state report generation */
+$seer_SCANTIME_TO_CONSIDER_NEW_RECORD_SLOWCHANGE = 600;
+$seer_COUNTEVERY_X_RECORD_CONSIDER_NEW_RECORD_SLOWCHANGE = floor($seer_SCANTIME_TO_CONSIDER_NEW_RECORD_SLOWCHANGE / ($seer_mod_openopc_SCANTIME_for_TANKMODEL * 2));
+/*	-- scan time in seconds (difference in time) between two records */
+/*	   before we consider the latter record a new one */
+/*	-- specifically for tank contents (product) report generation */
+$seer_ZEROTIMEFAULTS_LOG_AS_ONE_MINUTE = "NO";
+/*	-- if a fault or status has a time length of '0' seconds (because it */
+/*	   showed up on one scan but not on any subsequent onces), then give it a */
+/*	   time duration of 1 minute, regardless */
+/*	-- valid values are 'YES' or 'NO' */
+
+/* MODEL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/TANKMODEL/advancedoptions_TANKMODEL_0.php');
+
+?>

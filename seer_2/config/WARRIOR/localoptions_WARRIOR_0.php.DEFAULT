@@ -1,0 +1,934 @@
+<?php
+
+/*
+S.E.E.R. - The Warrior Module.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+  THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+WARRIOR OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* MODEL NOTES */
+/* ------------------------------------------------------------------ */
+/* NOTE - for each 'WARRIOR_NAME[xyz]' you must issue the following /*
+/* 		mysql insert statement on the WARRIOR_SCHEDULE table */
+/*	- INSERT INTO WARRIOR_SCHEDULE VALUES('MOZZ_PKG_CASE_PACK_C', '0'); */
+/*	- you must do this BEFORE running the mod_openopc READ routine */
+
+/* ACCESS */
+/* ------------------------------------------------------------------ */
+$MODEL_INSTANCE_DEPT_ALLOW_ALL = "NO";
+/*	-- level 7, 5, and 4 users can be restricted to their department only. */
+/*	   Although level 6 and above 3 cannot be.  The majority of your */
+/*	   users will be level 7 ('user level') users.  That said, */
+/*	   valid options are "YES" to allow all department level 7 */
+/*	   users to interact with this machine control or report, or */
+/*	   "NO" to restrict by DEPARTMENT NAME */
+$MODEL_INSTANCE_DEPT_ARRAY = array("Mozzarella Packaging");
+/*	-- an array of ALLOWED departments. */
+/*	-- if and only if you have set the 'ALLOW_ALL' value to "YES", */
+/*	   then you should set this value to "(ALL)" */
+/*	-- otherwise, comma and space separate allowed departments. */
+/*	   For example... */
+/*	       $MODEL_INSTANCE_DEPT_ARRAY = array("my_dept", "your_dept", "some-other-dept"); */
+
+/* WARRIOR DECLARATIONS */
+/* ------------------------------------------------------------------ */
+$WARRIOR_COUNT = 3;
+/*	-- how many WARRIOR items do you have */
+
+$WARRIOR_PRESET_PREFIX = "MOZZ_PKG_";
+/* single example... $WARRIOR_PRESET_PREFIX = "MILK_"; */
+/* multiple example... $WARRIOR_PRESET_PREFIX = "MILK_%' OR BULKNAME LIKE 'CREAM_"; */
+/*	-- necessary for performing efficient queries... */
+/*	   especially if you have multiple instances of this */
+/*	   model running.  all tanks should have */
+/*	   the same prefix, of if multiple prefixes, see above. */
+
+$WARRIOR_NAME[0] = "MOZZ_PKG_CASE_PACK_A";
+$WARRIOR_NAME[1] = "MOZZ_PKG_CASE_PACK_B";
+$WARRIOR_NAME[2] = "MOZZ_PKG_CASE_PACK_C";
+/* 	-- each WARRIOR item needs a name */
+/*	-- add as many up to 'WARRIOR_COUNT' - 1 */
+
+$WARRIOR_ALLOW_LABELING_PLUGIN = "NO";
+/*	-- allow labeling plugin integration for this local WARRIOR set */
+/*	-- 'YES' or 'NO' */
+
+/* SHIFT TIMES */
+/* ------------------------------------------------------------------ */
+$WARRIOR_SHIFT_COUNT = 3;
+/*	-- how many shifts does your plant have */
+
+$WARRIOR_SHIFT_NAME[0] = "FIRST";
+$WARRIOR_SHIFT_NAME[1] = "SECOND";
+$WARRIOR_SHIFT_NAME[2] = "THIRD";
+/*	-- name for each shift */
+
+$WARRIOR_SHIFT[0]['START'] = "06:00";
+$WARRIOR_SHIFT[0]['END'] = "14:00";
+$WARRIOR_SHIFT[1]['START'] = "14:00";
+$WARRIOR_SHIFT[1]['END'] = "22:00";
+$WARRIOR_SHIFT[2]['START'] = "22:00";
+$WARRIOR_SHIFT[2]['END'] = "06:00";
+/*	-- start and end time for 3rd shift */
+/*	-- observe military time */
+/*	-- note that 5 AM is represented as "05:00" and ABSOLUTELY NOT as "5:00" */
+/*		-- all times must have 2 hour characters, a colon, and 2 minute characters */
+
+/* OPC REGISTERS */
+/* ------------------------------------------------------------------ */
+$WARRIOR_PLC_LEAF_OPERATOR[0] = "XXX[MOZZ_PKG_CASE_PACK_A]YYYN10:0";
+$WARRIOR_PLC_LEAF_OPERATOR[1] = "XXX[MOZZ_PKG_CASE_PACK_B]YYYN10:0";
+$WARRIOR_PLC_LEAF_OPERATOR[2] = "XXX[MOZZ_PKG_CASE_PACK_C]YYYN12:0";
+/*	-- each machine must have a OPERATOR register */
+$WARRIOR_PLC_LEAF_ACTION[0] = "XXX[MOZZ_PKG_CASE_PACK_A]YYYN10:3";
+$WARRIOR_PLC_LEAF_ACTION[1] = "XXX[MOZZ_PKG_CASE_PACK_B]YYYN10:3";
+$WARRIOR_PLC_LEAF_ACTION[2] = "XXX[MOZZ_PKG_CASE_PACK_C]YYYN12:3";
+/*	-- each machine must have a CORRECTIVE_ACTION register */
+$WARRIOR_PLC_LEAF_JOB[0] = "XXX[MOZZ_PKG_CASE_PACK_A]YYYF12:1";
+$WARRIOR_PLC_LEAF_JOB[1] = "XXX[MOZZ_PKG_CASE_PACK_B]YYYF12:1";
+$WARRIOR_PLC_LEAF_JOB[2] = "XXX[MOZZ_PKG_CASE_PACK_C]YYYF13:1";
+/*	-- each machine must have a JOB_NUMBER register */
+$WARRIOR_PLC_LEAF_MAINTENANCE_MODE[0] = "XXX[MOZZ_PKG_CASE_PACK_A]YYYB11:0/0";
+$WARRIOR_PLC_LEAF_MAINTENANCE_MODE[1] = "XXX[MOZZ_PKG_CASE_PACK_B]YYYB11:0/0";
+$WARRIOR_PLC_LEAF_MAINTENANCE_MODE[2] = "XXX[MOZZ_PKG_CASE_PACK_C]YYYB11:0/0";
+/*	-- each machine must have a register to trigger MAINTENANCE MODE */
+$WARRIOR_PLC_LEAF_CYCLE_RESET[0] = "XXX[MOZZ_PKG_CASE_PACK_A]YYYB11:0/1";
+$WARRIOR_PLC_LEAF_CYCLE_RESET[1] = "XXX[MOZZ_PKG_CASE_PACK_B]YYYB11:0/1";
+$WARRIOR_PLC_LEAF_CYCLE_RESET[2] = "XXX[MOZZ_PKG_CASE_PACK_C]YYYB11:0/1";
+/*	-- each machine must have a register to trigger CYCLE RESET */
+
+/* OPC STATIC VALUES */
+/* ------------------------------------------------------------------ */
+$WARRIOR_CYCLE_RESET_VALUE = "1";
+/*	-- value to write to 'CYCLE RESET' leaf, in order to cause a cycle reset to zero */
+/*	-- this requires that the OPC device treat this as a 'one shot', and after resetting */
+/*	   the value, then auto-clears this register back to zero */
+
+/* UNITS OF MEASURE */
+/* ------------------------------------------------------------------ */
+$WARRIOR_UM_PACKAGE_UNIT = "each";
+/*	-- when you break down a package, what are the individual */
+/*	   contents to be called ? */
+/*	-- for example, an '8x5 lb' box of mozzarella cheese consists */
+/*	   of 8 each 5 pound blocks of cheese... so we can call the */
+/*	   PACKAGE_UNIT a 'each', 'eaches', 'block' or 'blocks' */
+/*	-- if you have no idea, or this varies greatly, simply use the */
+/*	   fallback value of '[units]' */
+$WARRIOR_UM_PACKAGE_UNIT_MASS = "lb";
+/*	-- what is the unit of mass used for packages and eaches */
+
+/* ALARM AND FAULT KEY */
+/* ------------------------------------------------------------------ */
+$WARRIOR_ALARM_COUNT = 294;
+/*	-- how many ALARMS do you have */
+
+$WARRIOR_ALARM[0] = "no alarms present";		/* -- required */
+$WARRIOR_ALARM[1] = "maintenance mode active";		/* -- required */
+$WARRIOR_ALARM[2] = "Communications Lost";
+$WARRIOR_ALARM[3] = "E-Stop Activated";
+$WARRIOR_ALARM[4] = "Debug Fault";
+$WARRIOR_ALARM[5] = "Invalid Product Code";
+$WARRIOR_ALARM[6] = "PLC Battery Low";
+$WARRIOR_ALARM[7] = "PLC in Program Mode";
+$WARRIOR_ALARM[8] = "Motor Overload Fault";
+$WARRIOR_ALARM[9] = "System Is Off";
+$WARRIOR_ALARM[10] = "System Cannot Reset";
+$WARRIOR_ALARM[11] = "NONE";
+$WARRIOR_ALARM[12] = "Running In Debug Mode";
+$WARRIOR_ALARM[13] = "None";
+$WARRIOR_ALARM[14] = "Package Underweight";
+$WARRIOR_ALARM[15] = "NONE";
+$WARRIOR_ALARM[16] = "Magazine is Low";
+$WARRIOR_ALARM[17] = "Power Out To Conveyor";
+$WARRIOR_ALARM[18] = "Conveyor System Is Off";
+$WARRIOR_ALARM[19] = "Conveyor Resetting";
+$WARRIOR_ALARM[20] = "Conveyor Cannot Reset";
+$WARRIOR_ALARM[21] = "Conveyor Product is Askew";
+$WARRIOR_ALARM[22] = "Conveyor Is Jammed";
+$WARRIOR_ALARM[23] = "Conveyor is Off/Inactive";
+$WARRIOR_ALARM[24] = "Conveyor MS#1 Fault";
+$WARRIOR_ALARM[25] = "Laner fault";
+$WARRIOR_ALARM[26] = "MS#3 Fault";
+$WARRIOR_ALARM[27] = "System Power Outage";
+$WARRIOR_ALARM[28] = "System Is Off";
+$WARRIOR_ALARM[29] = "System Is Resetting";
+$WARRIOR_ALARM[30] = "Main Machine Fault";
+$WARRIOR_ALARM[31] = "Main Machine Guard";
+$WARRIOR_ALARM[32] = "NONE";
+$WARRIOR_ALARM[33] = "NONE";
+$WARRIOR_ALARM[34] = "Pickoff Cylinder";
+$WARRIOR_ALARM[35] = "Prefold/Break Flap Cylinder";
+$WARRIOR_ALARM[36] = "Finish Fold Cyliner";
+$WARRIOR_ALARM[37] = "Bad Container Erect";
+$WARRIOR_ALARM[38] = "Container Vacuum Off";
+$WARRIOR_ALARM[39] = "NONE";
+$WARRIOR_ALARM[40] = "NONE";
+$WARRIOR_ALARM[41] = "NONE";
+$WARRIOR_ALARM[42] = "No Box In Load";
+$WARRIOR_ALARM[43] = "Case Jam PO to Load";
+$WARRIOR_ALARM[44] = "Lost Automatic Cycle";
+$WARRIOR_ALARM[45] = "Case In Load Limit Switch Stuck";
+$WARRIOR_ALARM[46] = "Load Gates Stuck";
+$WARRIOR_ALARM[47] = "NONE";
+$WARRIOR_ALARM[48] = "NONE";
+$WARRIOR_ALARM[49] = "NONE";
+$WARRIOR_ALARM[50] = "NONE";
+$WARRIOR_ALARM[51] = "Discharge Jam";
+$WARRIOR_ALARM[52] = "Main Cycle Jammed";
+$WARRIOR_ALARM[53] = "Torque Overload";
+$WARRIOR_ALARM[54] = "Stopped In Cycle";
+$WARRIOR_ALARM[55] = "Power Outage: Cycle";
+$WARRIOR_ALARM[56] = "Discharge Jammed";
+$WARRIOR_ALARM[57] = "Open Flap Detected";
+$WARRIOR_ALARM[58] = "Cycle Start Disabled";
+$WARRIOR_ALARM[59] = "NONE";
+$WARRIOR_ALARM[60] = "NONE";
+$WARRIOR_ALARM[61] = "NONE";
+$WARRIOR_ALARM[62] = "Glue Enable Limit Switch Stuck";
+$WARRIOR_ALARM[63] = "Minor Flap Folds Stuck";
+$WARRIOR_ALARM[64] = "Bottom Pre-Folds Stuck";
+$WARRIOR_ALARM[65] = "Top Flap Folders Stuck";
+$WARRIOR_ALARM[66] = "NONE";
+$WARRIOR_ALARM[67] = "NONE";
+$WARRIOR_ALARM[68] = "NONE";
+$WARRIOR_ALARM[69] = "NONE";
+$WARRIOR_ALARM[70] = "NONE";
+$WARRIOR_ALARM[71] = "NONE";
+$WARRIOR_ALARM[72] = "NONE";
+$WARRIOR_ALARM[73] = "NONE";
+$WARRIOR_ALARM[74] = "NONE";
+$WARRIOR_ALARM[75] = "NONE";
+$WARRIOR_ALARM[76] = "NONE";
+$WARRIOR_ALARM[77] = "NONE";
+$WARRIOR_ALARM[78] = "NONE";
+$WARRIOR_ALARM[79] = "NONE";
+$WARRIOR_ALARM[80] = "NONE";
+$WARRIOR_ALARM[81] = "Accumulator Fault";
+$WARRIOR_ALARM[82] = "Accumulator Door Open";
+$WARRIOR_ALARM[83] = "NONE";
+$WARRIOR_ALARM[84] = "NONE";
+$WARRIOR_ALARM[85] = "NONE";
+$WARRIOR_ALARM[86] = "NONE";
+$WARRIOR_ALARM[87] = "Top Cross Push Fault";
+$WARRIOR_ALARM[88] = "Infeed Trip Switch Stuck";
+$WARRIOR_ALARM[89] = "Infeed Jam";
+$WARRIOR_ALARM[90] = "Fallaway Wall Fault";
+$WARRIOR_ALARM[91] = "NONE";
+$WARRIOR_ALARM[92] = "Strip Plate Fault";
+$WARRIOR_ALARM[93] = "Platen Cylinder";
+$WARRIOR_ALARM[94] = "Platen Photo Eye";
+$WARRIOR_ALARM[95] = "Product on Platen";
+$WARRIOR_ALARM[96] = "NONE";
+$WARRIOR_ALARM[97] = "Bottom Cross Push";
+$WARRIOR_ALARM[98] = "Strip Plate Fault";
+$WARRIOR_ALARM[99] = "Inline Fault";
+$WARRIOR_ALARM[100] = "NONE";
+$WARRIOR_ALARM[101] = "NONE";
+$WARRIOR_ALARM[102] = "Load Cylinder";
+$WARRIOR_ALARM[103] = "Infeed Trip Switch";
+$WARRIOR_ALARM[104] = "Idle, Waiting for Product";
+$WARRIOR_ALARM[105] = "NONE";
+$WARRIOR_ALARM[106] = "Running in Debug Mode";
+$WARRIOR_ALARM[107] = "NONE";
+$WARRIOR_ALARM[108] = "PLC Battery Low";
+$WARRIOR_ALARM[109] = "Input Power Supply Failing";
+$WARRIOR_ALARM[110] = "Input DC Power Supply Failing";
+$WARRIOR_ALARM[111] = "Reset after Door Opened";
+$WARRIOR_ALARM[112] = "Output DC Power Supply Failing";
+$WARRIOR_ALARM[113] = "NONE";
+$WARRIOR_ALARM[114] = "Main Machine Guard Open";
+$WARRIOR_ALARM[115] = "Reset After Door Opened";
+$WARRIOR_ALARM[116] = "Guard Door Opened While Running";
+$WARRIOR_ALARM[117] = "Accumulator Guard Opened";
+$WARRIOR_ALARM[118] = "Accum Door Opened While Running";
+$WARRIOR_ALARM[119] = "Accum Door Opened While Running";
+$WARRIOR_ALARM[120] = "Laner Guards Opened";
+$WARRIOR_ALARM[121] = "Laner Guards Opened";
+$WARRIOR_ALARM[122] = "Laner Guards Opened";
+$WARRIOR_ALARM[123] = "Common Guards Opened";
+$WARRIOR_ALARM[124] = "NONE";
+$WARRIOR_ALARM[125] = "NONE";
+$WARRIOR_ALARM[126] = "Emergency Stop";
+$WARRIOR_ALARM[127] = "Emergency Stop";
+$WARRIOR_ALARM[128] = "System Off";
+$WARRIOR_ALARM[129] = "Infeed System Off";
+$WARRIOR_ALARM[130] = "Power Outage Occured";
+$WARRIOR_ALARM[131] = "Power Outage Occured";
+$WARRIOR_ALARM[132] = "System Resetting";
+$WARRIOR_ALARM[133] = "System Must Be Off to Reset";
+$WARRIOR_ALARM[134] = "Main Macine Guard Fault";
+$WARRIOR_ALARM[135] = "Accumulator Guard Fault";
+$WARRIOR_ALARM[136] = "Infeeed Guard Fault";
+$WARRIOR_ALARM[137] = "E-Stop Circuit Fault";
+$WARRIOR_ALARM[138] = "Invalid Product Code Selected";
+$WARRIOR_ALARM[139] = "System Cannot Reset";
+$WARRIOR_ALARM[140] = "Unknown Main Machine Fault";
+$WARRIOR_ALARM[141] = "Unknown Accumulator Fault";
+$WARRIOR_ALARM[142] = "Main Machine Debug Fault";
+$WARRIOR_ALARM[143] = "Accumulator Debug Fault";
+$WARRIOR_ALARM[144] = "Infeed Debug Fault";
+$WARRIOR_ALARM[145] = "Askewed Product Detected/Infeed Conveyor";
+$WARRIOR_ALARM[146] = "Laner Debug Fault";
+$WARRIOR_ALARM[147] = "NONE";
+$WARRIOR_ALARM[148] = "Pickoff Jammed";
+$WARRIOR_ALARM[149] = "Bad Container Erect";
+$WARRIOR_ALARM[150] = "Case Jammed Pickoff To Load";
+$WARRIOR_ALARM[151] = "Vacuum Is Off";
+$WARRIOR_ALARM[152] = "Pickoff button Pressed At Wrong Time";
+$WARRIOR_ALARM[153] = "Magazine Level Is Low";
+$WARRIOR_ALARM[154] = "Top Cross Push Jammed";
+$WARRIOR_ALARM[155] = "Platen Jammed";
+$WARRIOR_ALARM[156] = "Platen Product Jammed";
+$WARRIOR_ALARM[157] = "Platen Product Detected";
+$WARRIOR_ALARM[158] = "Inffed Trip Stuck";
+$WARRIOR_ALARM[159] = "Finish Folder Jammed";
+$WARRIOR_ALARM[160] = "Break Flap & Folders Jammed";
+$WARRIOR_ALARM[161] = "NONE";
+$WARRIOR_ALARM[162] = "NONE";
+$WARRIOR_ALARM[163] = "NONE";
+$WARRIOR_ALARM[164] = "NONE";
+$WARRIOR_ALARM[165] = "NONE";
+$WARRIOR_ALARM[166] = "Load Gates Jammed";
+$WARRIOR_ALARM[167] = "Load Jammed";
+$WARRIOR_ALARM[168] = "Container In Load L/S Stuck";
+$WARRIOR_ALARM[169] = "No Case In Load";
+$WARRIOR_ALARM[170] = "No Case In Load";
+$WARRIOR_ALARM[171] = "No Case In Load";
+$WARRIOR_ALARM[172] = "Top Cross Push Jammed";
+$WARRIOR_ALARM[173] = "Strip Plate Jammed";
+$WARRIOR_ALARM[174] = "Platen Jammed";
+$WARRIOR_ALARM[175] = "Platen Product Jammed";
+$WARRIOR_ALARM[176] = "Power Outage: Press Cycle";
+$WARRIOR_ALARM[177] = "Stopped in Cycle";
+$WARRIOR_ALARM[178] = "Infeed VFD Faulted";
+$WARRIOR_ALARM[179] = "Main Cycle Jammed";
+$WARRIOR_ALARM[180] = "Cycle Disabled By Downstream Signal";
+$WARRIOR_ALARM[181] = "Discharde Area Blocked";
+$WARRIOR_ALARM[182] = "Platen Product Detected During Reset";
+$WARRIOR_ALARM[183] = "Servo Fault";
+$WARRIOR_ALARM[184] = "Cycle Servo Fault";
+$WARRIOR_ALARM[185] = "Glue System is Not Okay";
+$WARRIOR_ALARM[186] = "Glue System Not Ready";
+$WARRIOR_ALARM[187] = "Gluse System L/S Stuck";
+$WARRIOR_ALARM[188] = "Infeed Trip Stuck";
+$WARRIOR_ALARM[189] = "NONE";
+$WARRIOR_ALARM[190] = "NONE";
+$WARRIOR_ALARM[191] = "NONE";
+$WARRIOR_ALARM[192] = "NONE";
+$WARRIOR_ALARM[193] = "5th Panel Glue Start Switch Stuck";
+$WARRIOR_ALARM[194] = "5th Panel Glue Stop Switch Stuck";
+$WARRIOR_ALARM[195] = "Under Weight Product After Scale";
+$WARRIOR_ALARM[196] = "Product Too Close Together On Scale";
+$WARRIOR_ALARM[197] = "NONE";
+$WARRIOR_ALARM[198] = "NONE";
+$WARRIOR_ALARM[199] = "Discharge Trip Stuck";
+$WARRIOR_ALARM[200] = "NONE";
+$WARRIOR_ALARM[201] = "NONE";
+$WARRIOR_ALARM[202] = "NONE";
+$WARRIOR_ALARM[203] = "NONE";
+$WARRIOR_ALARM[204] = "NONE";
+$WARRIOR_ALARM[205] = "NONE";
+$WARRIOR_ALARM[206] = "NONE";
+$WARRIOR_ALARM[207] = "NONE";
+$WARRIOR_ALARM[208] = "NONE";
+$WARRIOR_ALARM[209] = "NONE";
+$WARRIOR_ALARM[210] = "NONE";
+$WARRIOR_ALARM[211] = "NONE";
+$WARRIOR_ALARM[212] = "NONE";
+$WARRIOR_ALARM[213] = "NONE";
+$WARRIOR_ALARM[214] = "NONE";
+$WARRIOR_ALARM[215] = "NONE";
+$WARRIOR_ALARM[216] = "NONE";
+$WARRIOR_ALARM[217] = "NONE";
+$WARRIOR_ALARM[218] = "NONE";
+$WARRIOR_ALARM[219] = "NONE";
+$WARRIOR_ALARM[220] = "NONE";
+$WARRIOR_ALARM[221] = "NONE";
+$WARRIOR_ALARM[222] = "NONE";
+$WARRIOR_ALARM[223] = "Infeed Trip Switch Stuck On";
+$WARRIOR_ALARM[224] = "NONE";
+$WARRIOR_ALARM[225] = "Top Crosspush Jammed";
+$WARRIOR_ALARM[226] = "NONE";
+$WARRIOR_ALARM[227] = "Strip Plate Jammed";
+$WARRIOR_ALARM[228] = "NONE";
+$WARRIOR_ALARM[229] = "Platen Jammed";
+$WARRIOR_ALARM[230] = "Platen Product Jammed";
+$WARRIOR_ALARM[231] = "Platen Product Detected During Reset";
+$WARRIOR_ALARM[232] = "Platen Photoeye Blocked Too Long";
+$WARRIOR_ALARM[233] = "NONE";
+$WARRIOR_ALARM[234] = "NONE";
+$WARRIOR_ALARM[235] = "NONE";
+$WARRIOR_ALARM[236] = "Inline Up Push Torque Overload Failing";
+$WARRIOR_ALARM[237] = "Inline Push Torque Overload Failing";
+$WARRIOR_ALARM[238] = "Inline Up Push Torque Overload Detected";
+$WARRIOR_ALARM[239] = "Inline Push Torque Overload Detected";
+$WARRIOR_ALARM[240] = "Inline Push/Up Push Jammed";
+$WARRIOR_ALARM[241] = "Inline Trip is Stuck On";
+$WARRIOR_ALARM[242] = "Inline Product Sizer Jammed";
+$WARRIOR_ALARM[243] = "Bucket Conveyor Jammed";
+$WARRIOR_ALARM[244] = "Load Pusher/Follower Lift Is Jammed";
+$WARRIOR_ALARM[245] = "Load Push Product Sizers Jammed";
+$WARRIOR_ALARM[246] = "Load Follower Product sizers Jammed";
+$WARRIOR_ALARM[247] = "NONE";
+$WARRIOR_ALARM[248] = "Bottom Crosspush Jammed";
+$WARRIOR_ALARM[249] = "NONE";
+$WARRIOR_ALARM[250] = "NONE";
+$WARRIOR_ALARM[251] = "Open Flaps Detected";
+$WARRIOR_ALARM[252] = "Product Askew on Infeed Conveyors";
+$WARRIOR_ALARM[253] = "Open Flaps Detected";
+$WARRIOR_ALARM[254] = "NONE";
+$WARRIOR_ALARM[255] = "NONE";
+$WARRIOR_ALARM[256] = "NONE";
+$WARRIOR_ALARM[257] = "Infeed Conveyor Drive Fault";
+$WARRIOR_ALARM[258] = "Infeed Conveyor Disconnect Is Off";
+$WARRIOR_ALARM[259] = "Discharge Trip Stuck";
+$WARRIOR_ALARM[260] = "NONE";
+$WARRIOR_ALARM[261] = "NONE";
+$WARRIOR_ALARM[262] = "NONE";
+$WARRIOR_ALARM[263] = "NONE";
+$WARRIOR_ALARM[264] = "NONE";
+$WARRIOR_ALARM[265] = "NONE";
+$WARRIOR_ALARM[266] = "NONE";
+$WARRIOR_ALARM[267] = "NONE";
+$WARRIOR_ALARM[268] = "NONE";
+$WARRIOR_ALARM[269] = "NONE";
+$WARRIOR_ALARM[270] = "NONE";
+$WARRIOR_ALARM[271] = "NONE";
+$WARRIOR_ALARM[272] = "NONE";
+$WARRIOR_ALARM[273] = "NONE";
+$WARRIOR_ALARM[274] = "NONE";
+$WARRIOR_ALARM[275] = "NONE";
+$WARRIOR_ALARM[276] = "NONE";
+$WARRIOR_ALARM[277] = "NONE";
+$WARRIOR_ALARM[278] = "NONE";
+$WARRIOR_ALARM[279] = "NONE";
+$WARRIOR_ALARM[280] = "Servo Fault";
+$WARRIOR_ALARM[281] = "NONE";
+$WARRIOR_ALARM[282] = "NONE";
+$WARRIOR_ALARM[283] = "Laner Transition Area Jammed";
+$WARRIOR_ALARM[284] = "Laner Is OFF";
+$WARRIOR_ALARM[285] = "Laner Is Resetting";
+$WARRIOR_ALARM[286] = "Laner is in Manual Mode";
+$WARRIOR_ALARM[287] = "Laner Product Fault";
+$WARRIOR_ALARM[288] = "Laner Product Detected During Move";
+$WARRIOR_ALARM[289] = "Laner Overtravel Fault";
+$WARRIOR_ALARM[290] = "Laner Motion Fault";
+$WARRIOR_ALARM[291] = "Laner Drive Fault";
+$WARRIOR_ALARM[292] = "Laner Power Outage";
+$WARRIOR_ALARM[293] = "Laner Guards Not Enabled";
+/*	-- alarms and faults */
+
+/* ALARM TO CATEGORY ASSIGNMENT */
+/* ------------------------------------------------------------------ */
+/* 	-- each alarm must be assigned to one of the $WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY values */
+/*	   listed in the WARRIOR global options file.  */
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[0] = 0;		/* -- required */
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[1] = 2;		/* -- required */
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[2] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[3] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[4] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[5] = 5;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[6] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[7] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[8] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[9] = 1;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[10] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[11] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[12] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[13] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[14] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[15] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[16] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[17] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[18] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[19] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[20] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[21] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[22] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[23] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[24] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[25] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[26] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[27] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[28] = 1;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[29] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[30] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[31] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[32] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[33] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[34] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[35] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[36] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[37] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[38] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[39] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[40] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[41] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[42] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[43] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[44] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[45] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[46] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[47] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[48] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[49] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[50] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[51] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[52] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[53] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[54] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[55] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[56] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[57] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[58] = 1;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[59] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[60] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[61] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[62] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[63] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[64] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[65] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[66] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[67] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[68] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[69] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[70] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[71] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[72] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[73] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[74] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[75] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[76] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[77] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[78] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[79] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[80] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[81] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[82] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[83] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[84] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[85] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[86] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[87] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[88] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[89] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[90] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[91] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[92] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[93] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[94] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[95] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[96] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[97] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[98] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[99] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[100] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[101] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[102] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[103] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[104] = 3;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[105] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[106] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[107] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[108] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[109] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[110] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[111] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[112] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[113] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[114] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[115] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[116] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[117] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[118] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[119] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[120] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[121] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[122] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[123] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[124] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[125] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[126] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[127] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[128] = 1;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[129] = 1;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[130] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[131] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[132] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[133] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[134] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[135] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[136] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[137] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[138] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[139] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[140] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[141] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[142] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[143] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[144] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[145] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[146] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[147] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[148] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[149] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[150] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[151] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[152] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[153] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[154] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[155] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[156] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[157] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[158] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[159] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[160] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[161] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[162] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[163] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[164] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[165] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[166] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[167] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[168] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[169] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[170] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[171] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[172] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[173] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[174] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[175] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[176] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[177] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[178] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[179] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[180] = 1;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[181] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[182] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[183] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[184] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[185] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[186] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[187] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[188] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[189] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[190] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[191] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[192] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[193] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[194] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[195] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[196] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[197] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[198] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[199] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[200] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[201] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[202] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[203] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[204] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[205] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[206] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[207] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[208] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[209] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[210] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[211] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[212] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[213] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[214] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[215] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[216] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[217] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[218] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[219] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[220] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[221] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[222] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[223] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[224] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[225] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[226] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[227] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[228] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[229] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[230] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[231] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[232] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[233] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[234] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[235] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[236] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[237] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[238] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[239] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[240] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[241] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[242] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[243] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[244] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[245] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[246] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[247] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[248] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[249] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[250] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[251] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[252] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[253] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[254] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[255] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[256] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[257] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[258] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[259] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[260] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[261] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[262] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[263] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[264] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[265] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[266] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[267] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[268] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[269] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[270] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[271] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[272] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[273] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[274] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[275] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[276] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[277] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[278] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[279] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[280] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[281] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[282] = 0;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[283] = 6;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[284] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[285] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[286] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[287] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[288] = 4;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[289] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[290] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[291] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[292] = 2;
+$WARRIOR_ALARM_ASSIGNED_CATEGORY[293] = 4;
+/*	-- alarm and fault assignments */
+
+/* CORRECTIVE ACTION KEY */
+/* ------------------------------------------------------------------ */
+$WARRIOR_ACTION_COUNT = 12;
+/*	-- how many CORRECTIVE ACTIONS do you have */
+
+$WARRIOR_ACTION[0] = "none entered";			/* -- required */
+/*	-- 0 is always NO CORRECTIVE ACTION ENTERED */
+$WARRIOR_ACTION[1] = "maintenance mode active";		/* -- required */
+/*	-- 1 is always MAINTENANCE MODE ACTIVE */
+/*	-- NOTE - this has been deprecated, 1 is abandoned */
+$WARRIOR_ACTION[2] = "scheduled down or cleaning";	/* -- required */
+/*	-- 2 is always SCHEDULED DOWN OR CLEANING */
+$WARRIOR_ACTION[3] = "operator(s) on break or lunch";	/* -- required */
+/*	-- 3 is always OPERATOR ON BREAK OR LUNCH */
+/*	-- corrective actions */
+
+/*	-- your additional CORRECTIVE ACTIONS start here, with $WARRIOR_ACTION[4] */
+/*         and so on... */
+/* $WARRIOR_ACTION[4] = "something"; */
+$WARRIOR_ACTION[4] = "waiting for product";
+$WARRIOR_ACTION[5] = "product or machine changeover";
+$WARRIOR_ACTION[6] = "machine adjustment during run";
+$WARRIOR_ACTION[7] = "product / package / or material jambup";
+$WARRIOR_ACTION[8] = "waiting for packaging materials";
+$WARRIOR_ACTION[9] = "breakdown - date coder";
+$WARRIOR_ACTION[10] = "breakdown - labeler";
+$WARRIOR_ACTION[11] = "breakdown - other";
+
+/* CORRECTIVE ACTION TO CATEGORY ASSIGNMENT */
+/* ------------------------------------------------------------------ */
+/* 	-- each alarm must be assigned to one of the $WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY values */
+/*	   listed in the WARRIOR global options file.  */
+$WARRIOR_ACTION_ASSIGNED_CATEGORY[0] = 0;
+$WARRIOR_ACTION_ASSIGNED_CATEGORY[1] = 8;
+$WARRIOR_ACTION_ASSIGNED_CATEGORY[2] = 8;
+$WARRIOR_ACTION_ASSIGNED_CATEGORY[3] = 7;
+$WARRIOR_ACTION_ASSIGNED_CATEGORY[4] = 3;
+$WARRIOR_ACTION_ASSIGNED_CATEGORY[5] = 5;
+$WARRIOR_ACTION_ASSIGNED_CATEGORY[6] = 4;
+$WARRIOR_ACTION_ASSIGNED_CATEGORY[7] = 6;
+$WARRIOR_ACTION_ASSIGNED_CATEGORY[8] = 6;
+$WARRIOR_ACTION_ASSIGNED_CATEGORY[9] = 2;
+$WARRIOR_ACTION_ASSIGNED_CATEGORY[10] = 2;
+$WARRIOR_ACTION_ASSIGNED_CATEGORY[11] = 2;
+/*	-- corrective actions */
+
+/* PACKAGE CLASS KEY */
+/* ------------------------------------------------------------------ */
+$WARRIOR_PACKAGE_COUNT = 14;
+/*	-- how many PACKAGE CLASSES do you have */
+
+$WARRIOR_PACKAGE[0] = "Unipac";		/* unipac is where pkg is a pkg of one -- example, bulk bags */
+$WARRIOR_PACKAGE[1] = "2/5 lb Mozz or 2/6 lb Prov";
+$WARRIOR_PACKAGE[2] = "3/12 lb Provolone";
+$WARRIOR_PACKAGE[3] = "24/8 oz Mozzarella";
+$WARRIOR_PACKAGE[4] = "4/5 lb Mozzarella";
+$WARRIOR_PACKAGE[5] = "6/6 lb Provlome";
+$WARRIOR_PACKAGE[6] = "8/5 lb Mozzarella";
+$WARRIOR_PACKAGE[7] = "12/8 oz Mozzarella";
+$WARRIOR_PACKAGE[8] = "12/12 oz or 12/16 oz Mozz";
+$WARRIOR_PACKAGE[9] = "12/20 oz Mozzarella";
+$WARRIOR_PACKAGE[10] = "18/2 lb Mozzarella";
+$WARRIOR_PACKAGE[11] = "12/6 oz Mozzarella";
+$WARRIOR_PACKAGE[12] = "18/16 oz or 18/12 oz Mozz";
+$WARRIOR_PACKAGE[13] = "12/2 lb Mozzarella";
+/*	-- various package types */
+
+/* PACKAGE UNIT COUNT */
+/* ------------------------------------------------------------------ */
+$WARRIOR_PACKAGE_UNIT_COUNT[0] = 1;	/* unipac is always 1 -- for example, bulk bags */
+$WARRIOR_PACKAGE_UNIT_COUNT[1] = 2;
+$WARRIOR_PACKAGE_UNIT_COUNT[2] = 3;
+$WARRIOR_PACKAGE_UNIT_COUNT[3] = 24;
+$WARRIOR_PACKAGE_UNIT_COUNT[4] = 4;
+$WARRIOR_PACKAGE_UNIT_COUNT[5] = 6;
+$WARRIOR_PACKAGE_UNIT_COUNT[6] = 8;
+$WARRIOR_PACKAGE_UNIT_COUNT[7] = 12;
+$WARRIOR_PACKAGE_UNIT_COUNT[8] = 12;
+$WARRIOR_PACKAGE_UNIT_COUNT[9] = 12;
+$WARRIOR_PACKAGE_UNIT_COUNT[10] = 18;
+$WARRIOR_PACKAGE_UNIT_COUNT[11] = 12;
+$WARRIOR_PACKAGE_UNIT_COUNT[12] = 18;
+$WARRIOR_PACKAGE_UNIT_COUNT[13] = 12;
+/*	-- individual unit count per package, if unknown */
+/*	   then you may enter '1' and simply track packages */
+/*	   and ignore units */
+
+/* PACKAGE UNIT MASS */
+/* ------------------------------------------------------------------ */
+$WARRIOR_PACKAGE_UNIT_MASS[0] = 1;	/* unipac mass */
+$WARRIOR_PACKAGE_UNIT_MASS[1] = 5;	/* 5 for 2/5 - 6 for 2/6 */
+$WARRIOR_PACKAGE_UNIT_MASS[2] = 12;
+$WARRIOR_PACKAGE_UNIT_MASS[3] = 0.5;
+$WARRIOR_PACKAGE_UNIT_MASS[4] = 5;
+$WARRIOR_PACKAGE_UNIT_MASS[5] = 6;
+$WARRIOR_PACKAGE_UNIT_MASS[6] = 5;
+$WARRIOR_PACKAGE_UNIT_MASS[7] = 0.5;
+$WARRIOR_PACKAGE_UNIT_MASS[8] = 0.75;	/* 0.75 for 12oz - 1 for 16oz */
+$WARRIOR_PACKAGE_UNIT_MASS[9] = 1.25;
+$WARRIOR_PACKAGE_UNIT_MASS[10] = 2;
+$WARRIOR_PACKAGE_UNIT_MASS[11] = 6;
+$WARRIOR_PACKAGE_UNIT_MASS[12] = 1;	/* 1 for 16oz - 0.75 for 12oz */
+$WARRIOR_PACKAGE_UNIT_MASS[13] = 2;
+/*	-- individual unit mass per package, if unknown */
+/*	   then you may enter '1' and simply track units */
+/*	   and ignore units mass */
+
+/* PACKAGE UNIT TARGET RATE */
+/* ------------------------------------------------------------------ */
+$WARRIOR_PACKAGE_TARGET_RATE[0] = 2500;	/* guess-timate for unipac */
+$WARRIOR_PACKAGE_TARGET_RATE[1] = 2520;	/* 2520 for 2/5 - 2100 for 2/6 */
+$WARRIOR_PACKAGE_TARGET_RATE[2] = 1050;
+$WARRIOR_PACKAGE_TARGET_RATE[3] = 12000;
+$WARRIOR_PACKAGE_TARGET_RATE[4] = 2100;
+$WARRIOR_PACKAGE_TARGET_RATE[5] = 2100;
+$WARRIOR_PACKAGE_TARGET_RATE[6] = 2520;
+$WARRIOR_PACKAGE_TARGET_RATE[7] = 12000;
+$WARRIOR_PACKAGE_TARGET_RATE[8] = 7200; /* 7200 for 12/12 - 6480 for 12/16 */
+$WARRIOR_PACKAGE_TARGET_RATE[9] = 5760;
+$WARRIOR_PACKAGE_TARGET_RATE[10] = 4200;
+$WARRIOR_PACKAGE_TARGET_RATE[11] = 14000;
+$WARRIOR_PACKAGE_TARGET_RATE[12] = 6480;
+$WARRIOR_PACKAGE_TARGET_RATE[13] = 7200;
+/*	-- individual unit per [time window] target rate per package, if unknown */
+/*	   then you may enter '1' */
+/*	-- time window is 1 hour */
+
+/* mod_openopc FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$WARRIOR_mod_openopc_WRITEDAEMON = "thundercracker_hmi";
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$WARRIOR_SUBPAGETITLE = $seer_FRIENDLYNAME_WARRIOR[0];
+$WARRIOR_SUBPAGETITLE = substr_replace($WARRIOR_SUBPAGETITLE, "", 0, $seer_FRIENDLYNAME_WARRIOR_STRIP_FOR_SHORT);
+/*	-- friendly sub page title for identification of multiple models */
+
+/* COMMON-LOCAL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/WARRIOR/advanced_local-common_WARRIOR.php');
+
+?>

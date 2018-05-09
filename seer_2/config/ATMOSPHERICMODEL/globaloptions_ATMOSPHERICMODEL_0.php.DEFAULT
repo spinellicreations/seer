@@ -1,0 +1,165 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+ATMOSPHERICMODEL GLOBAL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* MODEL DECLARATION */
+/* ------------------------------------------------------------------ */
+$seer_ATMOSPHERICMODEL_MODEL_COUNT = 3;
+$seer_ATMOSPHERICMODEL_MODEL_COUNT_ADJUSTED = $seer_ATMOSPHERICMODEL_MODEL_COUNT - 1;
+/*	-- how many atmospheric models (instances) do we have */
+if ( $seer_ATMOSPHERICMODEL_MODEL_COUNT < 1 ) {
+	$seer_ENABLE_ATMOSPHERICMODEL = "NO";
+} else {
+	/* pass */
+}
+/*	-- sanity check */
+
+/* MODEL NAMING or IDENTIFICATION */
+/* ------------------------------------------------------------------ */
+$ATMOSPHERICMODEL_CODENAME = "v1 - Doryssus";
+/*	-- codename for this model */
+/*	-- change only if model has been upgraded to a new version */
+
+$seer_FRIENDLYNAME_ATMOSPHERICMODEL[0] = "ATMOSPHERICMODEL: D.C. Coolers";
+$seer_FRIENDLYNAME_ATMOSPHERICMODEL[1] = "ATMOSPHERICMODEL: Brine Temps";
+$seer_FRIENDLYNAME_ATMOSPHERICMODEL[2] = "ATMOSPHERICMODEL: Spiral Refridgerators";
+/*	-- each instance needs a name */
+
+$seer_FRIENDLYNAME_ATMOSPHERICMODEL_STRIP_FOR_SHORT = 18;
+/*	-- what number of characters we strip from friendly names */
+/*	   to use them as sub-page titles or for short versions */
+
+$seer_ATMOSPHERICMODEL_FORMFILL_MODELS = "";
+$ATMOSPHERICMODEL_MODEL_CYCLE = 0;
+while ( $ATMOSPHERICMODEL_MODEL_CYCLE <= $seer_ATMOSPHERICMODEL_MODEL_COUNT_ADJUSTED ) {
+	$seer_ATMOSPHERICMODEL_FORMFILL_MODELS = $seer_ATMOSPHERICMODEL_FORMFILL_MODELS."<OPTION VALUE='".$ATMOSPHERICMODEL_MODEL_CYCLE."'>".$seer_FRIENDLYNAME_ATMOSPHERICMODEL[$ATMOSPHERICMODEL_MODEL_CYCLE];
+	$ATMOSPHERICMODEL_MODEL_CYCLE = $ATMOSPHERICMODEL_MODEL_CYCLE + 1;
+}
+/*	-- formfill model identities */
+
+$seer_ATMOSPHERICMODEL_ENABLE_IMAP[0] = "YES";
+$seer_ATMOSPHERICMODEL_ENABLE_IMAP[1] = "YES";
+$seer_ATMOSPHERICMODEL_ENABLE_IMAP[2] = "YES";
+/*	-- "YES" or "NO" ... enable display of image map (drawing) */
+/*	   which details location of each area / zone for the instance */
+/*	-- image should be no larger than 600 wide x 300 high pixels, */
+/*	   and no smaller than 200 wide x 50 high pixels */
+/*	-- image size is not that important,especially if you're running */
+/*	   over the local LAN, but good practice suggests image size */
+/*	   of no more than 250 kB... typical images range around 15 to 50 kB */
+/*	-- image should be placed inside the local options folder and */
+/*	   titled ./localoptions_ATMOSPHERICMODEL_[x]_IMAP.png and in */
+/*	   PNG image format... for example... */
+/*		-- -- ./localoptions_ATMOSPHERICMODEL_5_IMAP.png */
+/*	-- THE FILE NAME IS CaSe SeNsItIvE !!! */
+
+/* DEFAULT UNITS OF MEASURE */
+/* ------------------------------------------------------------------ */
+$ATMOSPHERICMODEL_UM_TEMPERATURE = "deg F";
+$ATMOSPHERICMODEL_TEMPERATURE_LOW = 15;
+$ATMOSPHERICMODEL_TEMPERATURE_HIGH = 60;
+/*	-- this is the standard unit of measure for temperature that you are recording */
+/*	   for each area */
+/*	-- high and low plotting ranges for this measurement */
+$ATMOSPHERICMODEL_UM_HUMIDITY = "%";
+$ATMOSPHERICMODEL_HUMIDITY_LOW = 0;
+$ATMOSPHERICMODEL_HUMIDITY_HIGH = 100;
+/*	-- this is the standard unit of measure for humidity that you are recording */
+/*	   for each area */
+/*	-- high and low plotting ranges for this measurement */
+$ATMOSPHERICMODEL_UM_PRESSURE = "inHg";
+$ATMOSPHERICMODEL_PRESSURE_LOW = 28;
+$ATMOSPHERICMODEL_PRESSURE_HIGH = 32;
+/*	-- this is the standard unit of measure for humidity that you are recording */
+/*	   for each area (specific, not relative) */
+/*	-- high and low plotting ranges for this measurement */
+
+/* S.E.E.R. and SYPHON FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$ATMOSPHERICMODEL_mysql_mod_openopc_TABLENAME = "ATMOSPHERICMODEL";
+/*	-- mysql table where atmospheric runtime data is stored */
+$ATMOSPHERICMODEL_ROWS_IN_WINDOWS = 300;
+/*	-- when displaying reports for data over time, how many points should we display */
+/*	   we suggest 150 to 300 */
+
+/* MODEL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/ATMOSPHERICMODEL/advancedoptions_ATMOSPHERICMODEL_0.php');
+
+?>

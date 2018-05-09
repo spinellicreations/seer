@@ -1,0 +1,156 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+CHECKWEIGHERMODEL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* ACCESS */
+/* ------------------------------------------------------------------ */
+$MODEL_INSTANCE_DEPT_ALLOW_ALL = "NO";
+/*	-- level 7, 5, and 4 users can be restricted to their department only. */
+/*	   Although level 6 and above 3 cannot be.  The majority of your */
+/*	   users will be level 7 ('user level') users.  That said, */
+/*	   valid options are "YES" to allow all department level 7 */
+/*	   users to interact with this machine control or report, or */
+/*	   "NO" to restrict by DEPARTMENT NAME */
+$MODEL_INSTANCE_DEPT_ARRAY = array("Ricotta Packaging", "Quality Control", "Ricotta Production");
+/*	-- an array of ALLOWED departments. */
+/*	-- if and only if you have set the 'ALLOW_ALL' value to "YES", */
+/*	   then you should set this value to "(ALL)" */
+/*	-- otherwise, comma and space separate allowed departments. */
+/*	   For example... */
+/*	       $MODEL_INSTANCE_DEPT_ARRAY = array("my_dept", "your_dept", "some-other-dept"); */
+
+/* SCALE DECLARATIONS */
+/* ------------------------------------------------------------------ */
+$CHECKWEIGHERMODEL_COUNT = 3;
+/*	-- how many scales do you have */
+
+$CHECKWEIGHERMODEL_PRESET_PREFIX = "RICOTTA_RETAIL_";
+/* single example... $CHECKWEIGHERMODEL_PRESET_PREFIX = "MILK_"; */
+/* multiple example... $CHECKWEIGHERMODEL_PRESET_PREFIX = "MILK_%' OR MACHINENAME LIKE 'CREAM_"; */
+/*	-- necessary for performing efficient queries... */
+/*	   especially if you have multiple instances of this */
+/*	   model running.  all scales should have */
+/*	   the same prefix, of if multiple prefixes, see above. */
+
+$CHECKWEIGHERMODEL_NAME[0] = "RICOTTA_RETAIL_1";
+$CHECKWEIGHERMODEL_NAME[1] = "RICOTTA_RETAIL_2";
+$CHECKWEIGHERMODEL_NAME[2] = "RICOTTA_RETAIL_3";
+/* 	-- each scale needs a name */
+/*	-- add as many up to 'CHECKWEIGHERMODEL_COUNT' - 1 */
+
+/* OVERRIDE THE DEFAULT UNITS OF MEASURE */
+/* ------------------------------------------------------------------ */
+$CHECKWEIGHERMODEL_UM_OVERRIDE = "YES";
+/*	-- IF YOU WISH TO DECLARE SPECIFIC UNITS OF MEASURE FOR THIS MODEL */
+/*    	   THAT DIFFER FROM THE DEFAULT, THEN ENTER "YES", ELSE "NO" */
+if ($CHECKWEIGHERMODEL_UM_OVERRIDE == "YES") {
+	$CHECKWEIGHERMODEL_UM_MASS = "gm.";
+	/*	-- this is the standard unit of measure for mass that you are recording */
+	/*	   for each checkweigher */
+	$CHECKWEIGHERMODEL_UM_MASS_LARGE_QUANTITIES = "lb.";
+	/*	-- when representing large quantities or large totals, we will use */
+	/*	   a larger unit of meausre, such as "pounds" or "kilo-grams" rather than */
+	/*         the standard unit of measure (such as "ounces" or "grams") */
+	$CHECKWEIGHERMODEL_UM_MASS_LARGE_QUANTITIES_SCALE_FACTOR = 0.00220462262;
+	/*	-- multilply a value, in "_UM_MASS" by this scale factor in order to */
+	/*	   get a value in "_UM_MASS_LARGE_QUANTITIES" */
+	/*	-- for example, if _UM_MASS is "grams", and "_UM_MASS_LARGE_QUANTITIES" */
+	/*	   is "kilograms", then this scale factor will be 0.001 */
+	$CHECKWEIGHERMODEL_UM_UNIT = "ea.";
+} else {
+	/* pass */
+}
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$CHECKWEIGHERMODEL_DEPT_MONITOR_SNAPSHOT_TIME_MINUTES = 15;
+/*	-- when viewing the department monitor, the last 'X' minutes are analyzed */
+/*	   to give a good general idea of how the scale is performing... for very */
+/*	   fast operations, you may only want to look at the last minute or two */
+/*	   or for very slow operations, you may want to look at the last 20 minutes */
+/*	-- regardless, the unit of measure is 'minutes' */
+$CHECKWEIGHERMODEL_SUBPAGETITLE = $seer_FRIENDLYNAME_CHECKWEIGHERMODEL[0];
+$CHECKWEIGHERMODEL_SUBPAGETITLE = substr_replace($CHECKWEIGHERMODEL_SUBPAGETITLE, "", 0, $seer_FRIENDLYNAME_CHECKWEIGHERMODEL_STRIP_FOR_SHORT);
+/*	-- friendly sub page title for identification of multiple models */
+
+/* COMMON-LOCAL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/CHECKWEIGHERMODEL/advanced_local-common_CHECKWEIGHERMODEL.php');
+
+?>

@@ -1,0 +1,162 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+TTYPERFORMANCEMODEL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* ACCESS */
+/* ------------------------------------------------------------------ */
+$MODEL_INSTANCE_DEPT_ALLOW_ALL = "YES";
+/*	-- level 7, 5, and 4 users can be restricted to their department only. */
+/*	   Although level 6 and above 3 cannot be.  The majority of your */
+/*	   users will be level 7 ('user level') users.  That said, */
+/*	   valid options are "YES" to allow all department level 7 */
+/*	   users to interact with this machine control or report, or */
+/*	   "NO" to restrict by DEPARTMENT NAME */
+$MODEL_INSTANCE_DEPT_ARRAY = array("ALL");
+/*	-- an array of ALLOWED departments. */
+/*	-- if and only if you have set the 'ALLOW_ALL' value to "YES", */
+/*	   then you should set this value to ("ALL") */
+/*	-- otherwise, comma and space separate allowed departments. */
+/*	   For example... */
+/*	       $MODEL_INSTANCE_DEPT_ARRAY = array("my_dept", "your_dept", "some-other-dept"); */
+
+/* SCALE DECLARATIONS */
+/* ------------------------------------------------------------------ */
+$TTYPERFORMANCEMODEL_COUNT = 4;
+/*	-- how many scales do you have */
+
+$TTYPERFORMANCEMODEL_PRESET_PREFIX = "SCANNER_";
+/* single example... $TTYPERFORMANCEMODEL_PRESET_PREFIX = "MILK_"; */
+/* multiple example... $TTYPERFORMANCEMODEL_PRESET_PREFIX = "MILK_%' OR MACHINENAME LIKE 'CREAM_"; */
+/*	-- necessary for performing efficient queries... */
+/*	   especially if you have multiple instances of this */
+/*	   model running.  all scales should have */
+/*	   the same prefix, of if multiple prefixes, see above. */
+
+$TTYPERFORMANCEMODEL_NAME[0] = "SCANNER_1";
+$TTYPERFORMANCEMODEL_NAME[1] = "SCANNER_2";
+$TTYPERFORMANCEMODEL_NAME[2] = "SCANNER_3";
+$TTYPERFORMANCEMODEL_NAME[3] = "SCANNER_4";
+/* 	-- each tty input device needs a name */
+/*	-- add as many up to 'TTYPERFORMANCEMODEL_COUNT' - 1 */
+
+$TTYPERFORMANCEMODEL_INCLUDE_IN_PERFORMANCE_GRADING[0] = "YES";
+$TTYPERFORMANCEMODEL_INCLUDE_IN_PERFORMANCE_GRADING[1] = "YES";
+$TTYPERFORMANCEMODEL_INCLUDE_IN_PERFORMANCE_GRADING[2] = "NO";
+$TTYPERFORMANCEMODEL_INCLUDE_IN_PERFORMANCE_GRADING[3] = "YES";
+/* 	-- each device can either be included or excluded from */
+/*	   the overall system performance grade when running reports. */
+/*	-- to include a device, choose 'YES', to exclude choose 'NO'. */
+/*	-- add as many up to 'TTYPERFORMANCEMODEL_COUNT' - 1 */
+
+/* QUALITY OF DATA ENTRY INDICATORS */
+/* ------------------------------------------------------------------ */
+$TTYPERFORMANCEMODEL_REQUIRE_NUMERIC = "YES";
+/*	-- for a entry to be considered 'good', does it have to be a number ? */
+/*	-- "YES" if it has to be a number, or "NO" if strings (letters) are allowed. */
+$TTYPERFORMANCEMODEL_REQUIRE_LENGTH_MIN = "11";
+$TTYPERFORMANCEMODEL_REQUIRE_LENGTH_MAX = "14";
+/*	-- for an entry to be considered 'good', does it have to be a certain length ? */
+/*	-- set MIN and MAX to same value if you want a specific length, or set them */
+/*	   differently if you want a range of values to be considered good. */
+/*	-- set MIN to '0' and MAX to '999999' if you do not care about length. */
+$TTYPERFORMANCEMODEL_BAD_FLAGS = array("NO READ");
+/*	-- an array of values which if found anywhere in an entry will declare that */
+/*	   entry as 'bad', regardless of whether it meets the other criteria. */
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$TTYPERFORMANCEMODEL_DEPT_MONITOR_SNAPSHOT_TIME_MINUTES = 90;
+/*	-- when viewing the department monitor, the last 'X' minutes are analyzed */
+/*	   to give a good general idea of how the tty device is performing... for very */
+/*	   fast operations, you may only want to look at the last minute or two */
+/*	   or for very slow operations, you may want to look at the last 20 minutes */
+/*	-- regardless, the unit of measure is 'minutes' */
+$TTYPERFORMANCEMODEL_DEPT_MONITOR_SNAPSHOT_LIMIT_RECORDS = 24;
+/*	-- if you wish to limit the number of records displayed, you can do so here. */
+/*	-- to allow unlimited records, simply set this number to something ridiculous, */
+/*	   such as '99999'. */
+$TTYPERFORMANCEMODEL_SUBPAGETITLE = $seer_FRIENDLYNAME_TTYPERFORMANCEMODEL[0];
+$TTYPERFORMANCEMODEL_SUBPAGETITLE = substr_replace($TTYPERFORMANCEMODEL_SUBPAGETITLE, "", 0, $seer_FRIENDLYNAME_TTYPERFORMANCEMODEL_STRIP_FOR_SHORT);
+/*	-- friendly sub page title for identification of multiple models */
+
+/* COMMON-LOCAL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/TTYPERFORMANCEMODEL/advanced_local-common_TTYPERFORMANCEMODEL.php');
+
+?>

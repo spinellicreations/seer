@@ -1,0 +1,238 @@
+<?php
+
+/*
+S.E.E.R. - The Warrior Module.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+WARRIOR GLOBAL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* MODEL DECLARATION */
+/* ------------------------------------------------------------------ */
+$seer_WARRIOR_MODEL_COUNT = 4;
+$seer_WARRIOR_MODEL_COUNT_ADJUSTED = $seer_WARRIOR_MODEL_COUNT - 1;
+/*	-- how many tank models (instances) do we have */
+if ( $seer_WARRIOR_MODEL_COUNT < 1 ) {
+	$seer_ENABLE_WARRIOR = "NO";
+} else {
+	/* pass */
+}
+/*	-- sanity check */
+
+/* MODEL NAMING or IDENTIFICATION */
+/* ------------------------------------------------------------------ */
+$WARRIOR_CODENAME = "v2 - Leonidas";
+/*	-- codename for this model */
+/*	-- change only if model has been upgraded to a new version */
+
+$seer_FRIENDLYNAME_WARRIOR[0] = "WARRIOR: Mozzarella Packaging";
+$seer_FRIENDLYNAME_WARRIOR[1] = "WARRIOR: Shred Packaging";
+$seer_FRIENDLYNAME_WARRIOR[2] = "WARRIOR: Ricotta Pre-Packaging";
+$seer_FRIENDLYNAME_WARRIOR[3] = "WARRIOR: Ricotta Final-Packaging";
+/*	-- each instance needs a name */
+
+$seer_FRIENDLYNAME_WARRIOR_STRIP_FOR_SHORT = 8;
+/*	-- what number of characters shall we strip from friendly names */
+/*	   to use them as sub-page titles or for short versions */
+
+$seer_WARRIOR_FORMFILL_MODELS = "";
+$WARRIOR_MODEL_CYCLE = 0;
+while ( $WARRIOR_MODEL_CYCLE <= $seer_WARRIOR_MODEL_COUNT_ADJUSTED ) {
+	$seer_WARRIOR_FORMFILL_MODELS = $seer_WARRIOR_FORMFILL_MODELS."<OPTION VALUE='".$WARRIOR_MODEL_CYCLE."'>".$seer_FRIENDLYNAME_WARRIOR[$WARRIOR_MODEL_CYCLE];
+	$WARRIOR_MODEL_CYCLE = $WARRIOR_MODEL_CYCLE + 1;
+}
+/*	-- formfill model identities */
+
+/* STATE KEY */
+/* ------------------------------------------------------------------ */
+$WARRIOR_STATE_COUNT = 5;
+/*	-- how many STATES do you have */
+$WARRIOR_STATE_COUNT_ADJUSTED = $WARRIOR_STATE_COUNT - 1;
+/*	-- this offsets by 1 for array construction */
+/*	-- do not edit */
+
+$WARRIOR_STATE[0] = "IDLE - unknown cause of downtime";			/* -- required */
+/*	-- 0 is always IDLE UNKNOWN CAUSE OF DOWNTIME */
+$WARRIOR_STATE[1] = "IDLE - machine fault";				/* -- required */
+/*	-- 1 is always IDLE MACHINE FAULT */
+$WARRIOR_STATE[2] = "MAINT - machine under maintenance control";	/* -- required */
+/*	-- 2 is always UNDER MAINTENANCE CONTROL - OUT OF PRODUCTION */
+$WARRIOR_STATE[3] = "RUN - with fault present";				/* -- required */
+/*	-- 3 is always RUN WITH FAULT */
+$WARRIOR_STATE[4] = "RUN - normal operation";				/* -- required */
+/*	-- 4 is always RUN UNDER NORMAL CONDITION */
+/*	-- machine states */
+
+$WARRIOR_FORMFILL_STATE = "";
+$WARRIOR_COUNT_CYCLE = 0;
+while ( $WARRIOR_COUNT_CYCLE <= $WARRIOR_STATE_COUNT_ADJUSTED ) {
+	$WARRIOR_FORMFILL_STATE = $WARRIOR_FORMFILL_STATE."<OPTION VALUE='".$WARRIOR_COUNT_CYCLE."'>".$WARRIOR_STATE[$WARRIOR_COUNT_CYCLE];
+	$WARRIOR_COUNT_CYCLE = $WARRIOR_COUNT_CYCLE + 1;
+}
+
+/* DOWNTIME_and_NONSCHEDULED CATEGORY KEY */
+/* ------------------------------------------------------------------ */
+$WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY_COUNT = 9;
+/*	-- how many ALARM CATEGORIES do you have */
+$WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY_COUNT_ADJUSTED = $WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY_COUNT - 1;
+/*	-- this offsets by 1 for array construction */
+/*	-- do not edit */
+
+$WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY[0] = "unexplained";							/* -- required */
+/*	-- 0 is always UNEXPLAINED OR UNKNOWN */
+$WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY[1] = "other";							/* -- required */
+/*	-- 1 is always OTHER */
+$WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY[2] = "breakdown";							/* -- required */
+/*	-- 2 is always BREAKDOWN */
+$WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY[3] = "waiting for product";						/* -- required */
+/*	-- 3 is always WAITING FOR PRODUCT */
+$WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY[4] = "machine adjustment during run";				/* -- required */
+/*	-- 4 is always MACHINE ADJUSTMENT DURING RUN */
+$WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY[5] = "product or machine changeover";				/* -- required */
+/*	-- 5 is always PRODUCT OR MACHINE CHANGEOVER */
+$WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY[6] = "product / packaging handling, bad product / packaging";	/* -- required */
+/*	-- 6 is always PRODUCT OR PACKAGING HANDLING OR QUALITY ISSUE */
+$WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY[7] = "scheduled break or lunch";					/* -- required */
+/*	-- 7 is always SCHEDULED BREAK OR LUNCH */
+$WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY[8] = "scheduled down or cleaning";					/* -- required */
+/*	-- 8 is always SCHEDULED DOWN OR CLEANING */
+
+/* 	-- you may add your additional or custom CATEGORIES below staring with item "9"... */
+/* $WARRIOR_DOWNTIME_and_NONSCHEDULED_CATEGORY[9] = "whatever you want to set it as"; */
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$WARRIOR_mysql_mod_openopc_TABLENAME_DATA = "WARRIOR_DATA";
+/*	-- mysql table where system data is stored */
+$WARRIOR_mysql_mod_openopc_TABLENAME_JOB = "WARRIOR_JOB";
+/*	-- mysql table where job data is stored */
+$WARRIOR_mysql_mod_openopc_TABLENAME_SCHEDULE = "WARRIOR_SCHEDULE";
+/*	-- mysql table where schedule data is stored */
+$WARRIOR_ROWS_IN_WINDOWS = 150;
+/*	-- when displaying vertical bar plots or other data dumps, how many */
+/*	   rows shall be displayed in one dump */
+/*	   suggest 100 to 300 */
+$seer_HMISQLSEARCHMINIMUMTIMEFRAME_WARRIOR = 240;
+/*	-- value, in minutes, that you wish to 'go back' and use as summary */
+/*	   data for the 'live status' pages under 'machine control' */
+/*	-- suggested value is 4 hours... or '240' */
+/*	-- max suggested value is 8 hours... or '480' */
+/*	-- minimum value must be adhered to!!!! see below... */
+/*	-- minimum value is... */
+/*		MINVAL = ( (10) / (mod_openopc_READS_per_minute) ) + 1  */
+/*	-- so, if you are pulling data every 30 seconds, then you would */
+/*	   have a MINVAL of 21... (10 / 0.5 = 20... 20 + 1 = 21) */
+$WARRIOR_hmi_MINIMUM_JOB_TIME_REPORTING = 5;
+/*	-- when operators change from job to job, since they can only change */
+/*	   one item (SCHEDULE, JOB, OPERATOR NAME) at a time, we may end up */
+/*	   with instances of '1 minute' jobs, with zero throughput (because the */
+/*	   operator was simply in the process of setting up his or her line). */
+/*	-- to alleviate management or anyone viewing reports from having to see */
+/*	   these little anamolies, we will declare a time [ in minutes ] that */
+/*	   a job + schedule + operator combination must last for, before we */
+/*	   display it on certain reports. */
+/*	-- we will ALWAYS calculate and include the data for these instances, */
+/*	   but we will simply not display them on reports such as the */
+/*	   'GROSS THROUGHPUT' report. */
+/*	-- suggested value is 2 to 5 minutes for most manufacturing facilities. */
+/*	-- at this time, please use whole integers (no fractional values). */
+/*	-- set to 0 to show all, regardless of duration. */
+$WARRIOR_mysql_mod_openopc_NULL_JOB = "NONE or OUT OF SERVICE";
+/*	-- give the operator an option to indicate that no product or job is */
+/*         currently being run... think of this as representing "Line down" */
+/*	   In English, we call this "NO PRODUCT OR JOB" */
+$WARRIOR_hmi_SLOW_BOUNCEBACK_TIME = 15;
+/*	-- bounce back time in seconds (page refresh time) after a controller */
+/*	   bound command is sent via mod_openopc.  */
+/*	-- this value should be equal to your mod_openopc scan_interval in seconds for */
+/*	   your READ routines built upon WARRIOR. */
+/*	-- this value is reccomended to be 5 to 15 seconds */
+$WARRIOR_MIMIMUM_USER_LEVEL_MODIFY_POST_MORTUM = 3;
+/*	-- allow users with an access level equal to or higher than this level to */
+/*	   modify the 'CORRECTIVE_ACTION' for a period of downtime AFTER it has */
+/*	   already occured. For example, when running the OEE / TEEP Downtime Analysis */
+/*	   a user with an access level equal to or higher than this can modify the */
+/*	   corrective action variable for any discrete downtime instance. */
+/*	-- this value is reccomended to be level 3 (Manager) or higher. */
+/*	-- set to '0' if you do not want to allow anyone to modify, or set to '7' */
+/*	   to allow everyone. */
+$WARRIOR_ALLOW_MODIFY_POST_MORTUM_IF_CA_EXISTS = "NO";
+/*	-- allow users to modify 'CORRECTIVE ACTION', as described above, if it */
+/*	   has already been set ('YES'), or only if it is blank / not yet set ('NO')? */
+
+/* MODEL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/WARRIOR/advancedoptions_WARRIOR_0.php');
+
+?>

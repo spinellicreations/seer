@@ -1,0 +1,474 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+TOUCHPANEL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* ACCESS */
+/* ------------------------------------------------------------------ */
+$MODEL_INSTANCE_DEPT_ALLOW_ALL = "YES";
+/*	-- level 7, 5, and 4 users can be restricted to their department only. */
+/*	   Although level 6 and above 3 cannot be.  The majority of your */
+/*	   users will be level 7 ('user level') users.  That said, */
+/*	   valid options are "YES" to allow all department level 7 */
+/*	   users to interact with this machine control or report, or */
+/*	   "NO" to restrict by DEPARTMENT NAME */
+$MODEL_INSTANCE_DEPT_ARRAY = array("ALL");
+/*	-- an array of ALLOWED departments. */
+/*	-- if and only if you have set the 'ALLOW_ALL' value to "YES", */
+/*	   then you should set this value to "(ALL)" */
+/*	-- otherwise, comma and space separate allowed departments. */
+/*	   For example... */
+/*	       $MODEL_INSTANCE_DEPT_ARRAY = array("my_dept", "your_dept", "some-other-dept"); */
+
+/* REFRESHING and RECYCLING */
+/* ------------------------------------------------------------------ */
+$seer_BOUNCEBACKTIME = 30;
+/*	-- time between refreshing this page */
+$seer_BOUNCEBACKTIME_THISHMI_0 = 3;
+/*	-- time between pushing an external function and returning to this page */
+/* these variables are a new addition to the local options file.  but this now */
+/* allows the administrator to set the bounceback time differently for any */
+/* given local instance.  seer_BOUNCEBACKTIME_THISHMI_0 should be at least 1.5 times */
+/* the mod_openopc group update time... so if your group updates every 5 seconds, then */
+/* minimum bounceback time should be 7 or 8 seconds... please use whole integers. */
+
+/* CHART DECLARATIONS */
+/* ------------------------------------------------------------------ */
+$TOUCHPANEL_COUNT = 2;
+/*	-- how many CHART items do you have */
+
+$TOUCHPANEL_PRESET_PREFIX = "LITTLE_TEST_";
+/* single example... $TOUCHPANEL_PRESET_PREFIX = "MILK_"; */
+/* multiple example... $TOUCHPANEL_PRESET_PREFIX = "MILK_%' OR PANELNAME LIKE 'CREAM_"; */
+/*	-- necessary for performing efficient queries... */
+/*	   especially if you have multiple instances of this */
+/*	   model running.  all tanks should have */
+/*	   the same prefix, of if multiple prefixes, see above. */
+
+$TOUCHPANEL_NAME[0] = "LITTLE_TEST_1";
+$TOUCHPANEL_NAME[1] = "LITTLE_TEST_2";
+/* 	-- each PANEL item needs a name */
+/*	-- add as many up to 'TOUCHPANEL_COUNT' - 1 */
+
+/* TOUCHPANEL CELL TYPE DEFINITION */
+/* ------------------------------------------------------------------ */
+/* 	-- each PANEL has 36 cells, identified by 'row' and 'column',
+	   so "CELL 11" is actually "the cell in row #1 and column #1",
+	   and "CELL 34" is "the cell in row #3 and column #4. */
+/*	-- the following array is very simple... 
+		$TOUCHPANEL_CELL_TYPE[PANEL NUMBER][CELL ROW][CELL COLUMN]
+	   so to define the cell type for the 4th cell in the 5th row
+	   of the first panel...
+		$TOUCHPANEL_CELL_TYPE[0][4][5]
+	   or to define the cell type for the 2nd cell in the 6th row
+	   of the third (3rd) panel...
+		$TOUCHPANEL_CELL_TYPE[2][26] */
+/*	-- YOU MUST DEFINE ALL 36 CELLS ('11' through '66' respectively)
+	   FOR EACH PANEL THAT YOU INTEND TO USE !! */
+/*	-- Empty cells should simply be defined as "EMPTY" */
+$TOUCHPANEL_CELL_TYPE[0][1][1] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][1][2] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][1][3] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][1][4] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][1][5] = "DISPLAY_TEXT";
+$TOUCHPANEL_CELL_TYPE[0][1][6] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][2][1] = "ON_OFF_IND";
+$TOUCHPANEL_CELL_TYPE[0][2][2] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][2][3] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][2][4] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][2][5] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][2][6] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][3][1] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][3][2] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][3][3] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][3][4] = "MULTISTATE_IND_TOGGLE";
+$TOUCHPANEL_CELL_TYPE[0][3][5] = "MULTISTATE_IND";
+$TOUCHPANEL_CELL_TYPE[0][3][6] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][4][1] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][4][2] = "ON_OFF_IND_TOGGLE";
+$TOUCHPANEL_CELL_TYPE[0][4][3] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][4][4] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][4][5] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][4][6] = "DISPLAY_VALUE_EDIT";
+$TOUCHPANEL_CELL_TYPE[0][5][1] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][5][2] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][5][3] = "EMPTY_INVERSE";
+$TOUCHPANEL_CELL_TYPE[0][5][4] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][5][5] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][5][6] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][6][1] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][6][2] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][6][3] = "DISPLAY_TEXT";
+$TOUCHPANEL_CELL_TYPE[0][6][4] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][6][5] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[0][6][6] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][1][1] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][1][2] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][1][3] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][1][4] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][1][5] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][1][6] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][2][1] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][2][2] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][2][3] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][2][4] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][2][5] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][2][6] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][3][1] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][3][2] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][3][3] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][3][4] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][3][5] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][3][6] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][4][1] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][4][2] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][4][3] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][4][4] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][4][5] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][4][6] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][5][1] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][5][2] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][5][3] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][5][4] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][5][5] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][5][6] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][6][1] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][6][2] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][6][3] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][6][4] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][6][5] = "EMPTY";
+$TOUCHPANEL_CELL_TYPE[1][6][6] = "EMPTY";
+/*	-- each PANEL CELL must have a TYPE declared for it */
+/*	-- there are 36 CELLS to each PANEL. */
+/*	   (6 rows of 6 cells at 150 pixels wide by 80 pixels tall) */
+/*	-- valid types are... */
+/*	-- -- "EMPTY"			- an empty, blank cell, with no contents
+					and a white background */
+/*	-- -- "EMPTY_INVERSE"		- an empty, blank cell, with no centents
+					and a black background */
+/*	-- -- "DISPLAY_TEXT" 		- just plain text from dictionary 
+					displayed on white background */
+/*	-- -- "DISPLAY_VALUE" 		- cell value from database displayed 
+					on white background */
+/*	-- -- "DISPLAY_VALUE_EDIT"	- same as above, but the value can be
+					changed, and upon change it is written
+					to a predefined address */
+/*	-- -- "ON_OFF_IND_TOGGLE" 	- cell value (0 = off / 1 = on) is 
+					indicated, and the cell is a button 
+					that when pressed will write the 
+					opposite value to predefined location */
+/*	-- -- "ON_OFF_IND_TOGGLE_INVERSE"
+					- same as above, but will display
+					'green' (on state) when the value 
+					is actually OFF (0) and 'red' (off state)
+					when the value is actually ON (1) */
+/*	-- -- "ON_OFF_IND_MOMENTARY"	- same as above, but will write a '1' 
+					always... it is assumed that whatever
+					controller is being written to will
+					automatically handle the input, and then
+					return the location value to '0' on it's
+					own */
+/*	-- -- "ON_OFF_IND"		- same as above, but just an indicator,
+					no button */
+/*	-- -- "ON_OFF_IND_INVERSE"	- same as 'ON_OFF_IND_TOGGLE_INVERSE', but
+					just an indicator, no button */
+/*	-- -- "BUTTON_MOMENTARY"	- when pressed will write a predefined 
+					value to a predefined location.  There
+					is no indicator! */
+/*	-- -- "MULTISTATE_IND_TOGGLE"	- cell value (0 through 9) is indicated
+					by a colored highlight.  When pressed, will
+					write the next incremental value (0 to 9)
+					to predefiend location */
+/*	-- -- "MULTISTATE_IND"		- same as above, but just an indicator,
+					no button */
+/*	-- -- "LEVEL"			- cell value (min to max) is depicted by
+					a bar graph of predefined color */
+/*	-- -- "LEVEL_HIGH_WARN"		- same as above, but bar color is 
+					(green = good = low / red = bad = high)*/
+/*	-- -- "LEVEL_LOW_WARN"		- same as above, but bar color is
+					(green = good = high / red = bad = low)*/
+/* TOUCHPANEL CELL OPTION DEFINITION */
+/* ------------------------------------------------------------------ */
+/* 	-- each PANEL has 36 cells, identified by 'row' and 'column',
+	   so "CELL 11" is actually "the cell in row #1 and column #1",
+	   and "CELL 34" is "the cell in row #3 and column #4. */
+/*	-- the following array is very simple... 
+		$TOUCHPANEL_CELL_OPTION[PANEL NUMBER][CELL ROW][CELL COLUMN]
+	   so to define the cell option for the 4th cell in the 5th row
+	   of the first panel...
+		$TOUCHPANEL_CELL_OPTION[0][4][5]
+	   or to define the cell option for the 2nd cell in the 6th row
+	   of the third (3rd) panel...
+		$TOUCHPANEL_CELL_OPTION[2][26] */
+/*	-- YOU MUST DEFINE ALL 36 CELLS ('11' through '66' respectively)
+	   FOR EACH PANEL THAT YOU INTEND TO USE !! */
+/*	-- Each cell has option values that must be defined */
+/*	-- Empty cells should simply be defined as array("NONE") */
+$TOUCHPANEL_CELL_OPTION[0][1][1] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][1][2] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][1][3] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][1][4] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][1][5] = array("0");
+$TOUCHPANEL_CELL_OPTION[0][1][6] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][2][1] = array("1");
+$TOUCHPANEL_CELL_OPTION[0][2][2] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][2][3] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][2][4] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][2][5] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][2][6] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][3][1] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][3][2] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][3][3] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][3][4] = array("10","x");
+$TOUCHPANEL_CELL_OPTION[0][3][5] = array("10");
+$TOUCHPANEL_CELL_OPTION[0][3][6] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][4][1] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][4][2] = array("2","x");
+$TOUCHPANEL_CELL_OPTION[0][4][3] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][4][4] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][4][5] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][4][6] = array("3","x");
+$TOUCHPANEL_CELL_OPTION[0][5][1] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][5][2] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][5][3] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][5][4] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][5][5] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][5][6] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][6][1] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][6][2] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][6][3] = array("1");
+$TOUCHPANEL_CELL_OPTION[0][6][4] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][6][5] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[0][6][6] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][1][1] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][1][2] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][1][3] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][1][4] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][1][5] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][1][6] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][2][1] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][2][2] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][2][3] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][2][4] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][2][5] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][2][6] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][3][1] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][3][2] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][3][3] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][3][4] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][3][5] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][3][6] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][4][1] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][4][2] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][4][3] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][4][4] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][4][5] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][4][6] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][5][1] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][5][2] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][5][3] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][5][4] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][5][5] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][5][6] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][6][1] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][6][2] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][6][3] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][6][4] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][6][5] = array("NONE");
+$TOUCHPANEL_CELL_OPTION[1][6][6] = array("NONE");
+/*	-- each PANEL CELL must have options declared for it */
+/*	-- there are 36 CELLS to each PANEL. */
+/*	   (6 rows of 6 cells at 150 pixels wide by 80 pixels tall) */
+/*	-- options for the following valid types are... */
+/*	-- -- "EMPTY"			- no options, simply list as array("NONE"); */
+/*	-- -- "EMPTY_INVERSE"		- no options, simply list as array("NONE"); */
+/*	-- -- "DISPLAY_TEXT" 		- one (1) option...
+						array("ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY"); */
+/*	-- -- "DISPLAY_VALUE" 		- one (1) option...
+						array("ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY"); */
+/*	-- -- "DISPLAY_VALUE_EDIT"	- two (2) option...
+						array("ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY","mod_openopc_LEAF_TO_WRITE_TO"); */
+/*	-- -- "ON_OFF_IND_TOGGLE" 	- two (2) options...
+						array ("ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY","mod_openopc_LEAF_TO_WRITE_TO"); */
+/*	-- -- "ON_OFF_IND_TOGGLE_INVERSE" 
+					- two (2) options...
+						array ("ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY","mod_openopc_LEAF_TO_WRITE_TO"); */
+/*	-- -- "ON_OFF_IND_MOMENTARY"	- two (2) options...
+						array("ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY","mod_openopc_LEAF_TO_WRITE_TO"); */
+/*	-- -- "ON_OFF_IND"		- one (1) option...
+						array("ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY"); */
+/*	-- -- "ON_OFF_IND_INVERSE"		- one (1) option...
+						array("ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY"); */
+/*	-- -- "BUTTON_MOMENTARY"	- four (4) options...
+						array("ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY","mod_openopc_LEAF_TO_WRITE_TO","VALUE_TO_WRITE","ID_NUMBER_OF_COLOR_FOR_BUTTON"); */
+/*	-- -- "MULTISTATE_IND_TOGGLE"	- two (2) options...
+						array("OFFSET_FOR_ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY","mod_openopc_LEAF_TO_WRITE_TO"); */
+/*	-- -- "MULTISTATE_IND"		- one (1) option...
+						array("OFFSET_FOR_ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY"); */
+/*	-- -- "LEVEL"			- four (4) options...
+						array("ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY","MIN_RANGE","MAX_RANGE","NAME_OF_COLOR_FOR_BAR"); */
+/*	-- -- "LEVEL_HIGH_WARN"		- four (4) options...
+						array("ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY","MIN_RANGE","MAX_RANGE","VALUE_TO_WARN_AT"); */
+/*	-- -- "LEVEL_LOW_WARN"		- four (4) options...
+						array("ID_NUMBER_OF_TEXT_DECLARATION_TO_DISPLAY","MIN_RANGE","MAX_RANGE","VALUE_TO_WARN_AT"); */
+/*	-- COLORS!!!! */
+/*	-- -- the following are valid color "ID_NUMBER_OF_COLOR_FOR_[whatever]" codes:
+		-- note, these are defined by the multistate codes in the advanced options file,
+		   but, provided those haven't been changed, the defaults will apply.
+		-- "0"	-- default is #FFBB33 (soft orange) 
+		-- "1"	-- default is #FFEE88 (soft yellow) 
+		-- "2"	-- default is #FFAACC (soft pink) 
+		-- "3"	-- default is #CCEEFF (soft blue) 
+		-- "4"	-- default is #99FF33 (flourescent green) 
+		-- "5"	-- default is #9988FF (light purple) 
+		-- "6"	-- default is #00CCFF (bright blue) 
+		-- "7"	-- default is #996600 (light brown)
+		-- "8"	-- default is #888888 (dark grey) 
+		-- "9"	-- default is #FF00EE (hot pink)
+*/
+/*	-- -- the following are valid color "NAME_OF_COLOR_FOR_[whatever]" codes:
+		-- "0"	-- there is no zero, but if you accidently use '0', it'll be treated as "1"
+		-- "1"	-- default is 'default pen color'
+		-- "2"	-- default is 'red'
+		-- "3"	-- default is 'black'
+		-- "4"	-- default is 'green'
+		-- "5"	-- default is 'yellow'
+		-- "6"	-- default is 'blue'
+*/
+
+/* ALARM DICTIONARY */
+/* ------------------------------------------------------------------ */
+$TOUCHPANEL_ALARM[0] = "None";
+$TOUCHPANEL_ALARM[1] = "Alarm number 1";
+$TOUCHPANEL_ALARM[2] = "Alarm number 2";
+/*	-- alarm notifications (such as "Emergency Stop Pressed" or other). */
+/*	-- this list is shared by ALL panels within the localoptions */
+/*	   set. */
+/*	-- $TOUCHPANEL_ALARM_[0] should always be set to "None" or */
+/*	   or something of that nature... */
+/*	-- any alarm value that is greater than '0' (not zero) will be */
+/*	   highlighted (usually 'red') */
+/*		-- also requires string value to NOT be 'NONE' */
+
+$TOUCHPANEL_DISPLAY_ALARM_BANNER = "NO";
+/*	-- "YES" or "NO", allows you to remove display of alarm banner */
+
+/* TEXT DICTIONARY */
+/* ------------------------------------------------------------------ */
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[0] = "";
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[1] = "Some notification that is very very long, and fills up a cell";
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[2] = "Random text";
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[3] = "Description of some editable value";
+/* */
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[10] = "multi description 1";
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[11] = "multi description 2";
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[12] = "multi description 3";
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[13] = "multi description 4";
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[14] = "multi description 5";
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[15] = "multi description 6";
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[16] = "multi description 7";
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[17] = "multi description 8";
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[18] = "multi description 9";
+$TOUCHPANEL_DICTIONARY_NOTIFICATION[19] = "multi description 10";
+/*	-- notifications (such as operator notifications, or */
+/*	   any other machine data - ie. production steps, cleaning steps */
+/*	   or the like). */
+/*	-- this list is shared by ALL panels within the localoptions */
+/*	   set. */
+/*	-- when using with a 'MULTISTATE' cell, the 'OFFSET' option dictates what */
+/*	   series of 10 notifications will be displayed. */
+/*		-- for example, 'OFFSET' = 30 means that when 'MULTISTATE' cell */
+/*		   value is '8', notification '38' wil be displayed. */
+/*	-- $TOUCHPANEL_DICTIONARY_NOTIFICATION_[0] should always be set */
+/*	   to "" (empty string) */
+
+/* mod_openopc FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$TOUCHPANEL_mod_openopc_WRITEDAEMON = "thundercracker_hmi";
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$TOUCHPANEL_SUBPAGETITLE = $seer_FRIENDLYNAME_TOUCHPANEL[0];
+$TOUCHPANEL_SUBPAGETITLE = substr_replace($TOUCHPANEL_SUBPAGETITLE, "", 0, $seer_FRIENDLYNAME_TOUCHPANEL_STRIP_FOR_SHORT);
+/*	-- friendly sub page title for identification of multiple models */
+
+/* COMMON-LOCAL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/TOUCHPANEL/advanced_local-common_TOUCHPANEL.php');
+
+?>

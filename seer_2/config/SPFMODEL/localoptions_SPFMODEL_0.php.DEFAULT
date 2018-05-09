@@ -1,0 +1,368 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+SPFMODEL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* ACCESS */
+/* ------------------------------------------------------------------ */
+$MODEL_INSTANCE_DEPT_ALLOW_ALL = "YES";
+/*	-- level 7, 5, and 4 users can be restricted to their department only. */
+/*	   Although level 6 and above 3 cannot be.  The majority of your */
+/*	   users will be level 7 ('user level') users.  That said, */
+/*	   valid options are "YES" to allow all department level 7 */
+/*	   users to interact with this machine control or report, or */
+/*	   "NO" to restrict by DEPARTMENT NAME */
+$MODEL_INSTANCE_DEPT_ARRAY = array("ALL");
+/*	-- an array of ALLOWED departments. */
+/*	-- if and only if you have set the 'ALLOW_ALL' value to "YES", */
+/*	   then you should set this value to "(ALL)" */
+/*	-- otherwise, comma and space separate allowed departments. */
+/*	   For example... */
+/*	       $MODEL_INSTANCE_DEPT_ARRAY = array("my_dept", "your_dept", "some-other-dept"); */
+
+/* SPF DECLARATIONS */
+/* ------------------------------------------------------------------ */
+$SPFMODEL_COUNT = 6;
+/*	-- how many SPF items do you have */
+
+$SPFMODEL_PRESET_PREFIX = "RSPC_";
+/* single example... $SPFMODEL_PRESET_PREFIX = "MILK_"; */
+/* multiple example... $SPFMODEL_PRESET_PREFIX = "MILK_%' OR SPFNAME LIKE 'CREAM_"; */
+/*	-- necessary for performing efficient queries... */
+/*	   especially if you have multiple instances of this */
+/*	   model running.  all tanks should have */
+/*	   the same prefix, of if multiple prefixes, see above. */
+
+$SPFMODEL_NAME[0] = "RSPC_MILK_SEP_1";
+$SPFMODEL_NAME[1] = "RSPC_MILK_SEP_2";
+$SPFMODEL_NAME[2] = "RSPC_WHEY_SEP_1";
+$SPFMODEL_NAME[3] = "RSPC_WHEY_SEP_2";
+$SPFMODEL_NAME[4] = "RSPC_MILK_HTST_N5";
+$SPFMODEL_NAME[5] = "RSPC_MILK_UF";
+/* 	-- each SPF item needs a name */
+/*	-- add as many up to 'SPFMODEL_COUNT' - 1 */
+
+/* MACHINE TYPE DECLARATION */
+/* ------------------------ */
+$SPFMODEL_MACHINE_TYPE_PREREGISTERED[0] = 10;
+$SPFMODEL_MACHINE_TYPE_PREREGISTERED[1] = 10;
+$SPFMODEL_MACHINE_TYPE_PREREGISTERED[2] = 10;
+$SPFMODEL_MACHINE_TYPE_PREREGISTERED[3] = 10;
+$SPFMODEL_MACHINE_TYPE_PREREGISTERED[4] = 51;
+$SPFMODEL_MACHINE_TYPE_PREREGISTERED[5] = 31;
+/*	-- pre-register the machine type... each machine will identify its own */
+/*	   type, however for manual record entry and other functions, we need to */
+/*	   know the machine type without querying the database */
+/*	-- valid types... */
+/*		10 = SEPARATOR */
+/*		11 = SEPARATOR SELF-CLEANING */
+/*		20 = CLARIFIER */
+/*		21 = CLARIFIER SELF-CLEANING */
+/*		30 = ULTRA FILTRATION */
+/*		31 = ULTRA FILTRATION SELF-CLEANING */
+/*		40 = REVERSE OSSMOSIS */
+/*		41 = REVERSE OSSMOSIS SELF-CLEANING */
+/*		50 = HTST PASTEURIZER */
+/*		51 = HTST PASTUERIZER SELF-CLEANING */
+/*	-- NO OTHER TYPES (INTEGERS) ARE VALID! YOU MUST CHOOSE ONE OF THE ABOVE */
+
+/* MACHINE STATES */
+/* -------------- */
+$SPFMODEL_STATE_COUNT = 20;
+/*	-- how many states do you have */
+
+$SPFMODEL_STATE[0] = "Idle";
+$SPFMODEL_STATE[1] = "Fill Balance Tank";
+$SPFMODEL_STATE[2] = "Heat Water";
+$SPFMODEL_STATE[3] = "Wait For Heat To Stabalize";
+$SPFMODEL_STATE[4] = "Water Recirc - Press Product Start";
+$SPFMODEL_STATE[5] = "Drain Tank For Whey";
+$SPFMODEL_STATE[6] = "Purge Water";
+$SPFMODEL_STATE[7] = "Product Recycle";
+$SPFMODEL_STATE[8] = "Product Forward";
+$SPFMODEL_STATE[9] = "Drain Tank For Water";
+$SPFMODEL_STATE[10] = "Product Save";
+$SPFMODEL_STATE[11] = "Product Dump";
+$SPFMODEL_STATE[12] = "Cooldown";
+$SPFMODEL_STATE[13] = "Wait For CIP 10 Minute Timer";
+$SPFMODEL_STATE[14] = "Product";
+$SPFMODEL_STATE[15] = "Product with Desludge Occuring";
+$SPFMODEL_STATE[16] = "Rinse";
+$SPFMODEL_STATE[17] = "Production";
+$SPFMODEL_STATE[18] = "Cleaning";
+$SPFMODEL_STATE[19] = "Sanitize";
+/*	-- spf item state descriptions */
+$SPFMODEL_STATE_CLEANING = 18;
+/*	-- identify which state is to be globally considered the 'Cleaning' or 'CIP' */
+/*	   state for all machines in this model. */
+/*	-- identify with integer value of 0 through $SPFMODEL_STATE_COUNT_ADJUSTED */
+
+/* ALARMS AND FAULTS */
+/* ----------------- */
+$SPFMODEL_ALARM_COUNT = 16;
+/*	-- how many alarms do you have */
+
+$SPFMODEL_ALARM[0] = "None";
+$SPFMODEL_ALARM[1] = "P1 Feed Pump Failed";
+$SPFMODEL_ALARM[2] = "P2 Booster Pump Failed";
+$SPFMODEL_ALARM[3] = "P3 Primary H2O Pump Failed";
+$SPFMODEL_ALARM[4] = "P4 Cooling Pump Failed";
+$SPFMODEL_ALARM[5] = "P5 Secondary H2O Pump Failed";
+$SPFMODEL_ALARM[6] = "Low Product Alarm - Go To Water";
+$SPFMODEL_ALARM[7] = "High Hot Water Temp";
+$SPFMODEL_ALARM[8] = "Step Failed";
+$SPFMODEL_ALARM[9] = "FDV Failed";
+$SPFMODEL_ALARM[10] = "High Turbidity Alarm";
+$SPFMODEL_ALARM[11] = "High Temperature";
+$SPFMODEL_ALARM[12] = "Low Level In Balance Tank";
+$SPFMODEL_ALARM[13] = "Low Pressure";
+$SPFMODEL_ALARM[14] = "Pump Tripped";
+$SPFMODEL_ALARM[15] = "Low Processor Battery";
+/*	-- spf item alarm descriptions */
+
+/* SOURCES AND DESTINATIONS */
+/* ------------------------ */
+$SPFMODEL_SOURCE[0] = "None";
+$SPFMODEL_SOURCE[1] = "RSPC_MILK_HTST_N5";
+$SPFMODEL_SOURCE[2] = "WRIC_CLARIFIER";
+$SPFMODEL_SOURCE[3] = "RSPC SILOS";
+$SPFMODEL_SOURCE[4] = "RSPC_MILK_HTST_N5";
+$SPFMODEL_SOURCE[5] = "RSPC_MILK_SEP_1-or-2";
+/*	-- spf item source descriptions */
+
+$SPFMODEL_DESTINATION[0] = "None";
+$SPFMODEL_DESTINATION[1] = "RSPC_SILOS";
+$SPFMODEL_DESTINATION[2] = "RSPC_CREAM_TANKS";
+$SPFMODEL_DESTINATION[3] = "WP_PERMEATE_SILOS";
+$SPFMODEL_DESTINATION[4] = "Fines Recovery Tank";
+$SPFMODEL_DESTINATION[5] = "RSPC_MILK_SEP_1";
+$SPFMODEL_DESTINATION[6] = "RSPC_MILK_SEP_2";
+/*	-- spf item destination descriptions */
+
+/* MACHINE CLEANING */
+/* ---------------- */
+$SPFMODEL_CIP_BY[0] = "SEPARATOR_CIP";
+$SPFMODEL_CIP_BY[1] = "SEPARATOR_CIP";
+$SPFMODEL_CIP_BY[2] = "SEPARATOR_CIP";
+$SPFMODEL_CIP_BY[3] = "SEPARATOR_CIP";
+$SPFMODEL_CIP_BY[4] = "SELFCLEAN";
+$SPFMODEL_CIP_BY[5] = "SELFCLEAN";
+/*	-- each SPF item needs to identify whether it is cleaned by itself */
+/*	   or by another system.  */
+/*	-- if by self, identify as 'SELFCLEAN' */
+/*	-- if by other, identify as (for example) 'CIP SYSTEM - Separator CIP' */
+
+/* -- HOURS SINCE CLEAN WARNING POINTS */
+/* ----------------------------------- */
+$SPFMODEL_CLEANING_WARNING = 16;
+$SPFMODEL_CLEANING_ALARM = 20;
+$SPFMODEL_CLEANING_PASTDUE = 24;
+/*	-- triggers change in indicator color for HOURS SINCE CLEAN field */
+
+/* -- SELF CIP STEPS */
+/* ----------------- */
+$SPFMODEL_STEP_COUNT = 51;
+/*	-- how many steps in the CIP of each spf item */
+/*	-- for items that are NOT self-cip, simply enter '0' */
+
+$SPFMODEL_CIP_STEP[0] = "Off";
+$SPFMODEL_CIP_STEP[1] = "Wait for CIP 10 Minute Timer";
+$SPFMODEL_CIP_STEP[2] = "Prerinse Divert Leg";
+$SPFMODEL_CIP_STEP[3] = "Prerinse Leak Detect Leg";
+$SPFMODEL_CIP_STEP[4] = "Prerinse Return Leg";
+$SPFMODEL_CIP_STEP[5] = "Prerinse Drain";
+$SPFMODEL_CIP_STEP[6] = "Prerinse Forward";
+$SPFMODEL_CIP_STEP[7] = "Heat Caustic";
+$SPFMODEL_CIP_STEP[8] = "Caustic Wash Forward";
+$SPFMODEL_CIP_STEP[9] = "Caustic Wash Divert Leg";
+$SPFMODEL_CIP_STEP[10] = "Caustic Wash Leak Detect Leg";
+$SPFMODEL_CIP_STEP[11] = "Drain Caustic";
+$SPFMODEL_CIP_STEP[12] = "Purge Caustic";
+$SPFMODEL_CIP_STEP[13] = "Intermediate Rinse Return Leg";
+$SPFMODEL_CIP_STEP[14] = "Intermediate Rinse Divert Leg";
+$SPFMODEL_CIP_STEP[15] = "Intermediate Rinse Leak Detect Leg";
+$SPFMODEL_CIP_STEP[16] = "Heat Acid";
+$SPFMODEL_CIP_STEP[17] = "Acid Wash Forward";
+$SPFMODEL_CIP_STEP[18] = "Acid Wash Divert Leg";
+$SPFMODEL_CIP_STEP[19] = "Acid Wash Leak Detect Leg";
+$SPFMODEL_CIP_STEP[20] = "Drain Acid";
+$SPFMODEL_CIP_STEP[21] = "Purge Acid";
+$SPFMODEL_CIP_STEP[22] = "Acid Rinse Return Leg";
+$SPFMODEL_CIP_STEP[23] = "Acid Rinse Divert Leg";
+$SPFMODEL_CIP_STEP[24] = "Acid Rinse Leak Detect Leg";
+$SPFMODEL_CIP_STEP[25] = "Add Acid No Heat";
+$SPFMODEL_CIP_STEP[26] = "Acid Rinse Forward";
+$SPFMODEL_CIP_STEP[27] = "Acid Rinse Divert Leg";
+$SPFMODEL_CIP_STEP[28] = "Acid Rinse Leak Detect Leg";
+$SPFMODEL_CIP_STEP[29] = "Drain Acid";
+$SPFMODEL_CIP_STEP[30] = "Purge Acid";
+$SPFMODEL_CIP_STEP[31] = "Final Rinse Return Leg";
+$SPFMODEL_CIP_STEP[32] = "Final Rinse Divert Leg";
+$SPFMODEL_CIP_STEP[33] = "Final Rinse Leak Detect Leg";
+$SPFMODEL_CIP_STEP[34] = "Drain Tank";
+$SPFMODEL_CIP_STEP[35] = "Fill Tank";
+$SPFMODEL_CIP_STEP[36] = "System Startup";
+$SPFMODEL_CIP_STEP[37] = "Flushing System";
+$SPFMODEL_CIP_STEP[38] = "Hold For System Temp";
+$SPFMODEL_CIP_STEP[39] = "Alkaline Wash";
+$SPFMODEL_CIP_STEP[40] = "Check Ph 9.5 - 10";
+$SPFMODEL_CIP_STEP[41] = "Acid Wash";
+$SPFMODEL_CIP_STEP[42] = "Check Ph 10.9 - 11.2";
+$SPFMODEL_CIP_STEP[43] = "Check Ph 2.0 - 2.3";
+$SPFMODEL_CIP_STEP[44] = "Record Flux Rates";
+$SPFMODEL_CIP_STEP[45] = "System Hold Flow";
+$SPFMODEL_CIP_STEP[46] = "System Hold Pressure";
+$SPFMODEL_CIP_STEP[47] = "Record Flux Recirc. Hold";
+$SPFMODEL_CIP_STEP[48] = "System Shutdown";
+$SPFMODEL_CIP_STEP[49] = "Drain Tank";
+$SPFMODEL_CIP_STEP[50] = "End Program";
+/*	-- spf item CIP step descriptions */
+
+$SPFMODEL_CIP_REALSTEPS_START_INTEGER = 1;
+/* 	-- cip step values greater than or equal to this expression are */
+/*	   to be considered as real steps... */
+/*	-- typically step "0" will be "off" or "system idle" */
+/*	-- example... ">= 1", simply enter "1" */
+/*	   which means any cip status greater than or equal to 1"
+/*	-- -- valid expressions are... */
+/*		>= [integer] */
+
+/* -- SELF CIP WATER TYPES */
+/* ----------------------- */
+$SPFMODEL_WATER_TYPE_COUNT = 5;
+/*	-- how many alarms do you have */
+
+$SPFMODEL_CIP_WATER_TYPE[0] = "None";
+$SPFMODEL_CIP_WATER_TYPE[1] = "City Water";
+$SPFMODEL_CIP_WATER_TYPE[2] = "Treated Water";
+$SPFMODEL_CIP_WATER_TYPE[3] = "Treated & City Water";
+$SPFMODEL_CIP_WATER_TYPE[4] = "Filtered Water";
+/*	-- spf water type descriptions for CIP */
+
+/* TURBIDITY MONITORING */
+/* ------------------------------------------------------------------ */
+$SPFMODEL_TURBIDITY_SENSOR_PRESENT[0] = "YES";
+$SPFMODEL_TURBIDITY_SENSOR_PRESENT[1] = "YES";
+$SPFMODEL_TURBIDITY_SENSOR_PRESENT[2] = "YES";
+$SPFMODEL_TURBIDITY_SENSOR_PRESENT[3] = "YES";
+$SPFMODEL_TURBIDITY_SENSOR_PRESENT[4] = "YES";
+$SPFMODEL_TURBIDITY_SENSOR_PRESENT[5] = "NO";
+/*	-- is a turbidity sensor present on the spf item? */
+/*	-- 'YES' or 'NO' are valid answers for each */
+
+/* TURBIDITY CONTROLS */
+/* ------------------------------------------------------------------ */
+$SPFMODEL_UTILIZE_TURBIDITY_CONTROLS = "YES";
+/*	-- shall we utitilze turbidity control for this model */
+/*	-- "YES" or "NO" */
+/*	-- if "YES", requires next section be completed */
+
+if ( $SPFMODEL_UTILIZE_TURBIDITY_CONTROLS == "YES" ) {
+
+	$SPFMODEL_PLC_LEAF_TURBIDITY_ACKNOWLEDGE[0] = "XXX[RSPC_MILK_SEP_1]YYYN7:16";
+	$SPFMODEL_PLC_LEAF_TURBIDITY_ACKNOWLEDGE[1] = "XXX[RSPC_MILK_SEP_2]YYYN7:17";
+	$SPFMODEL_PLC_LEAF_TURBIDITY_ACKNOWLEDGE[2] = "XXX[RSPC_WHEY_SEP_1]YYYN7:16";
+	$SPFMODEL_PLC_LEAF_TURBIDITY_ACKNOWLEDGE[3] = "XXX[RSPC_WHEY_SEP_2]YYYN7:17";
+	$SPFMODEL_PLC_LEAF_TURBIDITY_ACKNOWLEDGE[4] = "XXX[RSPC_MILK_HTST_N5]YYYN7:22";
+	$SPFMODEL_PLC_LEAF_TURBIDITY_ACKNOWLEDGE[5] = "none";
+	/* 	-- each selc-clean item needs a turbidity alarm acknowledge register (leaf) */
+	/*	-- add as many as are in 'SPFMODEL_COUNT' - 1 */
+	/*	-- enter 'none' for units that do not have turbidity sensor installed */
+
+	$SPFMODEL_PLC_LEAF_VALUE_TO_ACKNOWLEDGE_TURBIDITY_ALARM = 1;
+	/*	-- value to write to PLC to silence or acknowledge turbidity alarm */
+
+} else {
+	/* pass */
+}
+
+/* mod_openopc FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$SPFMODEL_mod_openopc_WRITEDAEMON = "thundercracker_hmi";
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$SPFMODEL_SUBPAGETITLE = $seer_FRIENDLYNAME_SPFMODEL[0];
+$SPFMODEL_SUBPAGETITLE = substr_replace($SPFMODEL_SUBPAGETITLE, "", 0, $seer_FRIENDLYNAME_SPFMODEL_STRIP_FOR_SHORT);
+/*	-- friendly sub page title for identification of multiple models */
+
+/* COMMON-LOCAL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/SPFMODEL/advanced_local-common_SPFMODEL.php');
+
+?>

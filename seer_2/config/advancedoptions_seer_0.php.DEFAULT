@@ -1,0 +1,264 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+S.E.E.R. ADVANCED OPTIONS FILE
+--  EDIT AT YOUR OWN RISK
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is Operating System agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* ADDITIONAL CONFIG DATA NEEDED TO RUN */
+/* 	-- YOU SHOULDN'T NEED TO EDIT THIS AT ALL */
+/* ------------------------------------------------------------------ */
+
+/* --- WARNING -- -- -- WARNING -- -- -- WARNING -- -- -- WARNING --- */
+/* --- WARNING -- -- -- WARNING -- -- -- WARNING -- -- -- WARNING --- */
+/*								      */
+/*	YOU SHOULD -NOT- HAVE TO EDIT THE FOLLOWING OPTIONS	      */
+/*	-- THEY ARE HERE FOR SEVERAL REASONS:			      */
+/*								      */
+/*		1- FUTURE COMPATABILITY				      */
+/*		2- EASE OF PROGRAMMING (LOGICAL PLACE TO PUT THEM     */
+/*		   TO ALLOW CALL)				      */
+/*		3- IN CASE YOU WANT TO START MODIFYING SEER,          */
+/*	           AT WHICH TIME YOU MAY NEED TO CHANGE THESE ITEMS   */
+/*								      */
+/*	-- OTHER THAN THAT, DON'T MODIFY THEM!			      */
+/*								      */
+/* --- WARNING -- -- -- WARNING -- -- -- WARNING -- -- -- WARNING --- */
+/* --- WARNING -- -- -- WARNING -- -- -- WARNING -- -- -- WARNING --- */
+
+/*	THEME PULL IN */
+/* 	------------- */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/plugins/themes/'.$seer_THEME_TO_USE.'/options.php');
+/*	-- DO NOT EDIT */
+/*	-- all themes should be placed in /[seer_webroot]/plugins/themes/[theme_name]/ */
+/*	   and contain an 'options.php' file */
+
+/*	PLUGIN PULL IN */
+/* 	--------------- */
+$apache_plugin_process_active = "PRE";
+foreach ($seer_PLUGINS_TO_USE as $selected_PLUGIN) {
+	include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/plugins/'.$selected_PLUGIN.'/options.php');
+}
+$apache_plugin_process_active = "NONE";
+/*	-- DO NOT EDIT */
+/*	-- all plugins should be placed in /[seer_webroot]/plugins/[plugin_name]/ */
+/*	   and contain an 'options.php' file */
+
+/*	AUTO REFRESH */
+/*	------------ */
+$apache_SERVER_NAME_OR_IP = $_SERVER['HTTP_HOST'];
+/*	-- SERVER's DNS NAME or STATIC IP ADDRESS */
+/*	-- default behavior is to be auto-found with $_SERVER['HTTP_HOST'] */
+/*	   but you may manually enter if you wish (without the starting 'http://' portion) */
+$apache_FALLBACK_TO_DEPRECATED_META_REFRESH = "GRACEFUL";
+/*	-- most modern standards compliant browsers support php header 'refresh' instruction */
+/*	   but some older ones do not.  Namely, MSIE-6 does not.  In order to function in */
+/*	   an environment running much of this browser, we can force SEER to fall back to */
+/*	   using the older (and now deprecated in HTML / XHTML - where support for it may */
+/*	   eventually disappear in modern browsers) META REFRESH tag set. */
+/*	-- valid choices are "YES", "NO", or "GRACEFUL", where you should only choose "YES" if you */
+/*	   are going to force MSIE-6 compatability. */
+/*		-- YES      ... forces deprecated META REFRESH tag set ONLY */
+/*		-- NO       ... forces newer semi-standard php header 'refresh' instruction ONLY */
+/*		-- GRACEFUL ... uses both methods - php header 'refresh' is attempted first, but */
+/*			   	if it is not available or fails, then a META REFRESH is scheduled */
+/*				for 1 second later. */
+/*	-- the default choice is 'GRACEFUL' and works best in environments where clients are mixed */
+/*	   between older and newer browsers. ... although the ideal choice would be 'NO' if everyone had */
+/*	   newer gear. */
+
+/*	FACILITY ID */
+/*	----------- */
+$seer_FACILITY_ID = $seer_DEFAULT_SITE_ID." [".$seer_DEFAULT_COMPANY_ID."]";
+/*	-- pretty print a facility ID that is made up of site and company ID's */
+
+/*	MySQL 1st LEVEL DATABASE CREATION PARAMETERS */
+/*	-------------------------------------------- */
+$mod_openopc_1st_LEVEL_DB_CREATION_Q01 = "CREATE DATABASE IF NOT EXISTS ".$mysql_mod_openopc_DBNAME;
+$mod_openopc_1st_LEVEL_DB_CREATION_Q02 = "CREATE TABLE IF NOT EXISTS system_faults(DATESTAMP VARCHAR(20), INDEX(DATESTAMP), TYPE VARCHAR(15), INDEX(TYPE), ROUTINE VARCHAR(55), INDEX(ROUTINE), PARTNER VARCHAR(20), INDEX(PARTNER), ACKNOWLEDGED VARCHAR(30), INDEX(ACKNOWLEDGED))";
+$mod_openopc_1st_LEVEL_DB_CREATION_Q03 = "system_faults";
+/*	-- creation parameters for the encompassing mod_openopc database */
+/*	-- see mod_openopc_setup_createdb_negotiation for more information */
+
+/*	PILOT LIGHT(S) */
+/*	-------------- */
+$seer_PILOT_DATA_DISPLAY_ONLY = "YES";
+/*	-- pilot lights, only display data light  */
+/*	-- 'YES' shows only data light */
+/*		(red data light indicates fault ) */
+/*	-- 'NO' shows data and fault light */
+/*	        Be aware that you'll have to make */
+/*		custom banners of a different size to */
+/*		compensate! */
+
+/*	CHART AND PLOT TWEAKS */
+/*	--------------------- */
+$seer_GANTT_CHART_WIDTH_IN_PIXELS = 520;
+/*	-- width of a gantt chart's display space. */
+/*	-- altering will skew any existing reports which */
+/*	   utilize the display within a cell */
+$seer_GANTT_CHART_TICKS = 5;
+/*	-- divisions within a gantt chart's display space. */
+/*	-- altering will skew the whole chart */
+$seer_GANTT_CHART_TABLE_PIXELS = 900;
+/*	-- altering will skew the chart's place within the secondary container */
+$seer_GANTT_CHART_WIDTH_IN_PIXELS_POPUP_CANVAS = 2090;
+$seer_GANTT_CHART_TICKS_POPUP_CANVAS = 20;
+$seer_GANTT_CHART_TABLE_PIXELS_POPUP_CANVAS = 2470;
+/*	-- same as above, but for PopUP Canvas use */
+
+/*	EXPORT FILE DELINEATIONS */
+/*	------------------------ */
+$seer_CSV_DELINEATION = ",";
+$seer_CSV_ENDOFLINE_HOLDING = "CSVEOL";
+$seer_CSV_ENDOFLINE_ACTUAL = "\n";
+$seer_CSV_WHITESPACE_HOLDING = "WHITESPACEHOLDING";
+$seer_CSV_WHITESPACE_ACTUAL = " ";
+/*	-- parameters specific to export files */
+/*	-- -- character encoding for CSV creation */
+/*	-- -- also applies to TXT file creation */
+
+/*	EXPORT PDF FILE via wkhtmltopdf DEFAULTS */
+/*	---------------------------------------- */
+$seer_system_cmd_wkhtmltopdf_default_options = "-s LETTER -O Landscape -q --disable-internal-links --load-error-handling ignore --javascript-delay 2500 --minimum-font-size 6 --disable-smart-shrinking --title SEER_EXPORT_PDF";
+
+/* 	DOCUMENTATION PATHS */
+/* ------------------------ */
+$apache_DOCPATHSEER = $apache_WEBROOT.'/'.$apache_seer_VERSION.'/download/seer_docs';
+$apache_DOCPATHSEER_LINK = '/'.$apache_seer_VERSION.'/download/seer_docs';
+/*	-- DO NOT EDIT, DEFAULT IS $apache_WEBROOT.'/'.$apache_seer_VERSION.'/download/seer_docs' */
+$apache_DOCPATHMODOPENOPC = $apache_WEBROOT.'/'.$apache_seer_VERSION.'/download/mod_openopc_docs';
+$apache_DOCPATHMODOPENOPC_LINK = '/'.$apache_seer_VERSION.'/download/mod_openopc_docs';
+/*	-- DO NOT EDIT, DEFAULT IS $apache_WEBROOT.'/seer_rawhide/seer_rawhide/download/mod_openopc_docs' */
+$apache_DOCPATHEXPORTS = $apache_WEBROOT.'/'.$apache_seer_VERSION.'/exports';
+/*	-- DO NOT EDIT, DEFAULT IS $apache_WEBROOT.'/seer_rawhide/exports' */
+
+/*	URI PATHS */
+/* -------------- */
+$apache_URIROOT = "http://".$apache_SERVER_NAME_OR_IP."/".$apache_seer_VERSION;
+/*	-- DO NOT EDIT, DEFAULT IS "http://".$apache_SERVER_NAME_OR_IP."/".$apache_seer_VERSION */
+
+/* 	PHP INI MODIFICATIONS */
+/*	--------------------- */
+/*	-- the following succeeds with varying success */
+/*	-- if you experience any problems, declare hardcoded in php /*
+/*	   config file (php.ini) */
+/*	-- keep in mind also the hardware requirements for SEER and mod_openopc */
+/*	   specifically a 'beefy' server to handle the user / data load... */
+/*	   because more data means more info to process, means longer processing times */
+/*	   on slow hardware. */
+/*
+		precision = 14
+		arg_separator.input = "& ;"
+		arg_separator.output = ";"
+		// output_buffering = On
+		post_max_size = 100M
+		default_socket_timeout = 90
+		asp_tags = Off
+		y2k_compliance = On
+		safe_mode = Off
+		serialize_precision = 100
+		expose_php = On
+		max_execution_time = 420
+		max_input_time = 360 
+*/
+ini_set('precision', 14);
+ini_set('arg_separator.input', ";&");
+ini_set('arg_separator.output', ";");
+/* ini_set('output_buffering', "On"); */
+ini_set('post_max_size', "100M");
+ini_set('default_socket_timeout', 90);
+ini_set('asp_tags', "Off");
+ini_set('y2k_compliance', "On");
+ini_set('safe_mode', "Off");
+ini_set('serialize_precision', 100);
+ini_set('expose_php', "On");
+ini_set('max_execution_time', 420);
+ini_set('max_input_time', 360);
+
+/*	PHP DEBUGGING */
+/*	------------- */
+$ENABLE_CLOCK_ME_EXECUTION_TIME_STAMP = "YES";
+/*	-- "YES" or "NO" */
+/*	-- displays execution time at bottom of each generated page */
+$ENABLE_CLOCK_ME_TRAFFIC_COP_ENCOUNTERED = "NO";
+/*	-- placeholder, do NOT edit */
+
+/* PROCEED */
+/* ------------------------------------------------------------------ */
+require($apache_WEBROOT.'/'.$apache_seer_VERSION.'/include/seer_finalize_options_and_functions.php');
+
+?>

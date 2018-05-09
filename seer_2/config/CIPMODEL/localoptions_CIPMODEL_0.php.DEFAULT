@@ -1,0 +1,270 @@
+<?php
+
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+CIPMODEL OPTIONS FILE
+-- EDIT TO SUIT YOUR INDIVIDUAL SERVER CONTROL NEEDS
+---------------------------------------------------------------------
+*/
+
+	/* FILE SYSTEM NOTE */
+	/* ---------------- */
+	/* NOTE
+	With regard to directory structure for UNIX versus WIN systems,
+	S.E.E.R.'s implementation in PHP is operating system agnostic.
+	Whether on WIN or UNIX, the syntax is the same.  For example...
+	-- PHP call to folder... /my_folder/cheese
+	-- will reference WIN folder... C:\my_folder\cheese
+	-- will reference UNIX folder... /my_folder/cheese
+	We rock the party that rocks the party.
+	*/
+
+/* ACCESS */
+/* ------------------------------------------------------------------ */
+$MODEL_INSTANCE_DEPT_ALLOW_ALL = "YES";
+/*	-- level 7, 5, and 4 users can be restricted to their department only. */
+/*	   Although level 6 and above 3 cannot be.  The majority of your */
+/*	   users will be level 7 ('user level') users.  That said, */
+/*	   valid options are "YES" to allow all department level 7 */
+/*	   users to interact with this machine control or report, or */
+/*	   "NO" to restrict by DEPARTMENT NAME */
+$MODEL_INSTANCE_DEPT_ARRAY = array("ALL");
+/*	-- an array of ALLOWED departments. */
+/*	-- if and only if you have set the 'ALLOW_ALL' value to "YES", */
+/*	   then you should set this value to "(ALL)" */
+/*	-- otherwise, comma and space separate allowed departments. */
+/*	   For example... */
+/*	       $MODEL_INSTANCE_DEPT_ARRAY = array("my_dept", "your_dept", "some-other-dept"); */
+
+/* CIP DECLARATIONS */
+/* ------------------------------------------------------------------ */
+$CIPMODEL_COUNT = 2;
+/*	-- how many CIP systems do you have */
+
+$CIPMODEL_PRESET_PREFIX = "WHEY_RIC_CIP_";
+/* single example... $CIPMODEL_PRESET_PREFIX = "MILK_"; */
+/* multiple example... $CIPMODEL_PRESET_PREFIX = "MILK_%' OR CIPNAME LIKE 'CREAM_"; */
+/*	-- necessary for performing efficient queries... */
+/*	   especially if you have multiple instances of this */
+/*	   model running.  all tanks should have */
+/*	   the same prefix, of if multiple prefixes, see above. */
+
+$CIPMODEL_NAME[0] = "WHEY_RIC_CIP_1";
+$CIPMODEL_NAME[1] = "WHEY_RIC_CIP_2";
+
+/* 	-- each CIP needs a name */
+/*	-- add as many up to 'CIPMODEL_COUNT' - 1 */
+
+/* STATUS FOR CIPS */
+/* ------------------------------------------------------------------ */
+$CIPMODEL_STATUS_COUNT = 8;
+/*	-- how many CIP statuses do you have */
+
+$CIPMODEL_STATUS[0] = "Active and Ready";
+$CIPMODEL_STATUS[1] = "CIP Running";
+$CIPMODEL_STATUS[2] = "Fill Required";
+$CIPMODEL_STATUS[3] = "CIP in Manual Hold";
+$CIPMODEL_STATUS[4] = "Low Water";
+$CIPMODEL_STATUS[5] = "Low Temperature";
+$CIPMODEL_STATUS[6] = "Low Conductivity";
+$CIPMODEL_STATUS[7] = "CIP Stopped";
+/*	-- literal status values */
+
+$CIPMODEL_STATUS_FAULT_START_INTEGER = 2;
+/* 	-- status values corresponding to the first item in the list, above, */
+/*	   which indicates a FAULT. */
+/*	-- all previous (lesser integers) are considered GOOD status. */
+
+/* LINES THAT ARE BEING CIPED */
+/* ------------------------------------------------------------------ */
+$CIPMODEL_LINE_BEING_CLEANED_COUNT = 9;
+/*	-- shows how many lines can be cleaned */
+
+$CIPMODEL_LINE_BEING_CLEANED[0] = "None";
+$CIPMODEL_LINE_BEING_CLEANED[1] = "Filler Cheese Lines";
+$CIPMODEL_LINE_BEING_CLEANED[2] = "Curd Line";
+$CIPMODEL_LINE_BEING_CLEANED[3] = "Processors";
+$CIPMODEL_LINE_BEING_CLEANED[4] = "Retentate";
+$CIPMODEL_LINE_BEING_CLEANED[5] = "Surge Tanks";
+$CIPMODEL_LINE_BEING_CLEANED[6] = "Blenders";
+$CIPMODEL_LINE_BEING_CLEANED[7] = "Whey Transfer To Bepex";
+$CIPMODEL_LINE_BEING_CLEANED[8] = "Predraw Lines";
+/*	-- literal line being cleaned values */
+
+$CIPMODEL_LINE_BEING_CLEANED_REALLINES_START_INTEGER = "1";
+/* 	-- line being cleaned values corresponding to the first item in the list, above, */
+/*	   which indicates an actual line that we may clean. */
+/*	-- all previous (lesser integers) are considered NON EXISTANT or PLACEHOLDERS. */
+
+/* CIP STEP */
+/* ------------------------------------------------------------------ */
+$CIPMODEL_STEP_COUNT = 27;
+/*	-- how many steps in the CIP */
+
+$CIPMODEL_STEP[0] = "Reset or Off";
+$CIPMODEL_STEP[1] = "Fill Tanks";
+$CIPMODEL_STEP[2] = "First Pre-Rinse";
+$CIPMODEL_STEP[3] = "Return To Drain";
+$CIPMODEL_STEP[4] = "Second Pre-Rinse";
+$CIPMODEL_STEP[5] = "AirBlow To Drain";
+$CIPMODEL_STEP[6] = "Return To Drain";
+$CIPMODEL_STEP[7] = "Acid Wash";
+$CIPMODEL_STEP[8] = "Air Blow To Acid Tank";
+$CIPMODEL_STEP[9] = "Acid Recovery Rinse";
+$CIPMODEL_STEP[10] = "Rinse To Drain";
+$CIPMODEL_STEP[11] = "AirBlow to Drain";
+$CIPMODEL_STEP[12] = "Caustic Wash";
+$CIPMODEL_STEP[13] = "Air Blow To Caustic Tank";
+$CIPMODEL_STEP[14] = "Caustic Recovery Rinse";
+$CIPMODEL_STEP[15] = "Rinse to Drain";
+$CIPMODEL_STEP[16] = "AirBlow To Drain";
+$CIPMODEL_STEP[17] = "Return To Drain";
+$CIPMODEL_STEP[18] = "Acid Wash";
+$CIPMODEL_STEP[19] = "Air Blow To Acid Tank";
+$CIPMODEL_STEP[20] = "Acid Recovery Rinse";
+$CIPMODEL_STEP[21] = "Rinse To Drain";
+$CIPMODEL_STEP[22] = "AirBlow to Drain";
+$CIPMODEL_STEP[23] = "Sanitize to Drain";
+$CIPMODEL_STEP[24] = "AirBlow to Drain";
+$CIPMODEL_STEP[25] = "Release Air Pressure";
+$CIPMODEL_STEP[26] = "End";
+/*	-- literal step values */
+
+$CIPMODEL_REALSTEPS_START_INTEGER = 1;
+/* 	-- step values corresponding to the first item in the list, above, */
+/*	   which indicates an actual step in cleaning. */
+/*	-- all previous (lesser integers) are considered NON EXISTANT or PLACEHOLDERS. */
+
+/* TYPES OF SOLUTION or WATER BEING USED */
+/* ------------------------------------------------------------------ */
+$CIPMODEL_WATER_TYPE_COUNT = 5;
+/*	-- how many water types do you have */
+
+$CIPMODEL_WATER_TYPE[0] = "None";
+$CIPMODEL_WATER_TYPE[1] = "Treated Water";
+$CIPMODEL_WATER_TYPE[2]	= "City Water";
+$CIPMODEL_WATER_TYPE[3]	= "Treated & City Water";
+$CIPMODEL_WATER_TYPE[4]	= "Filtered Water";
+/*	-- literal water type values */
+
+/* CIP STEPPING CONTROLS */
+/* ------------------------------------------------------------------ */
+$CIPMODEL_UTILIZE_STEP_CONTROLS = "NO";
+/*	-- shall we utitilze steppng control for this model */
+/*	-- "YES" or "NO" */
+/*	-- if "YES", requires next section be completed */
+
+if ( $CIPMODEL_UTILIZE_STEP_CONTROLS == "YES" ) {
+
+	/* FORCING HOLDS */
+	/* ------------- */
+	$CIPMODEL_PLC_WRITE_FORCE_HOLD_VALUE = 1;
+	/*	-- what value is written to PLC's to force a hold */
+	$CIPMODEL_PLC_WRITE_FORCE_HOLD_VALUE_RELEASE = 0;
+	/*	-- what value is written to PLC's to remove a forced a hold */
+
+	$CIPMODEL_PLC_LEAF_FORCE_HOLD[0] = "XXX[WHEY_RIC_CIP_1]YYYN17:20";
+	$CIPMODEL_PLC_LEAF_FORCE_HOLD[1] = "XXX[WHEY_RIC_CIP_2]YYYN17:20";
+	/* 	-- each CIP needs a hold force register (leaf) */
+	/*	-- add as many as are in 'CIPMODEL_COUNT' - 1 */
+
+	/* FORCING STEPS */
+	/* ------------- */
+	$CIPMODEL_PLC_WRITE_FORCE_STEP_VALUE = 1;
+	/*	-- what value is written to PLC's to force a step */
+
+	$CIPMODEL_PLC_LEAF_FORCE_STEP[0] = "XXX[WHEY_RIC_CIP_1]YYYN17:20";
+	$CIPMODEL_PLC_LEAF_FORCE_STEP[1] = "XXX[WHEY_RIC_CIP_2]YYYN17:20";
+	/* 	-- each CIP needs a step force register (leaf) */
+	/*	-- add as many as are in 'CIPMODEL_COUNT' - 1 */
+
+	/* DISABLING MANUAL HOLD AND STEP */
+	/* ------------------------------ */
+	$CIPMODEL_PLC_WRITE_DISABLE_MANUAL_HOLD_AND_STEP_VALUE = 1;
+	/*	-- what value is written to PLC's to force a hold and step lockout */
+	$CIPMODEL_PLC_WRITE_DISABLE_MANUAL_HOLD_AND_STEP_VALUE_RELEASE = 0;
+	/*	-- what value is written to PLC's to remove a hold and step lockout */
+
+	$CIPMODEL_PLC_LEAF_DISABLE_MANUAL_HOLD_AND_STEP[0] = "XXX[WHEY_RIC_CIP_1]YYYN17:20";
+	$CIPMODEL_PLC_LEAF_DISABLE_MANUAL_HOLD_AND_STEP[1] = "XXX[WHEY_RIC_CIP_2]YYYN17:20";
+	/* 	-- each CIP needs a hold / step disable register (leaf) */
+	/*	-- add as many as are in 'CIPMODEL_COUNT' - 1 */
+
+} else {
+	/* pass */
+}
+
+/* mod_openopc FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$CIPMODEL_mod_openopc_WRITEDAEMON = "thundercracker_hmi";
+
+/* S.E.E.R. FUNCTIONALITY VARIABLES AND SUCH */
+/* ------------------------------------------------------------------ */
+$CIPMODEL_SUBPAGETITLE = $seer_FRIENDLYNAME_CIPMODEL[0];
+$CIPMODEL_SUBPAGETITLE = substr_replace($CIPMODEL_SUBPAGETITLE, "", 0, $seer_FRIENDLYNAME_CIPMODEL_STRIP_FOR_SHORT);
+/*	-- friendly sub page title for identification of multiple models */
+
+/* COMMON-LOCAL ADVANCED OPTIONS AND SETTINGS */
+/* ------------------------------------------------------------------ */
+include($apache_WEBROOT.'/'.$apache_seer_VERSION.'/config/CIPMODEL/advanced_local-common_CIPMODEL.php');
+
+?>
