@@ -1,0 +1,668 @@
+/*
+S.E.E.R.
+---------------------------------------------------------------------
+System and Environment Effective Reports
+-- version 2, codename: Brahma Bull
+     ________________
+   `/    \-'  '-/    \`
+          \    /
+          (\||/)
+
+---------------------------------------------------------------------
+ ... the http / web based front-end of mod_openopc, providing
+     live HMI / reporting / and history functionality.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+COPYRIGHT
+
+ THE FOLLOWING 18 LINES MAY NOT BE REMOVED, but may be
+     appended with additional contributor info.
+ SEER 2
+ Copyright (C) 2008 - 2013
+ V. Spinelli for Sorrento Lactalis American Group
+ Copyright (C) 2013 - 2014
+ V. Spinelli for SpinelliCreations
+ Copyright (C) 2014
+ V. Spinelli for Harper International, Corp.
+ Copyright (C) 2016
+ V. Spinelli and J. Trembley for RS Automation, LLC.
+ This program comes with ABSOLUTELY NO WARRANTY;
+ As this program is based on [and has dependancies]
+ the content of GPL and LGPL works, GPL is preserved (AGPL)
+ This is open software, released under GNU AGPL v3,
+ and you are welcome to redistribute it, with this
+ tag in tact.
+ A copy of the AGPL should be included with this work.
+ If you did not receive a copy, see...
+ http://www.gnu.org/licenses/agpl-3.0.txt
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CONTACT		
+		Author			V. Spinelli
+				Email:	Vince@SpinelliCreations.com
+				Site:	http://spinellicreations.com
+				Handle:	PoweredByDodgeV8
+
+		Copyright Holder	Sorrento Lactalis American Group
+				Email:	http://www.sorrentocheese.com/about/contact.html
+				Site:	http://www.sorrentolactalis.com
+
+					SpinelliCreations
+				Email:	Admin@SpinelliCreations.com
+				Site:	http://www.spinellicreations.com
+
+					Harper International, Corp.
+				Email:	info@harperintl.com
+				Site:	http://www.harperintl.com
+					
+					RS Automation, LLC.
+				Email:	RickS@rsautomation.net
+				Site:	http://www.rsautomation.net
+---------------------------------------------------------------------
+CASCADING STYLE SHEET for CANVAS
+--  GOVERNS APPEARANCE CANVAS PAGE
+---------------------------------------------------------------------
+*/
+
+/* NOTE! */
+/* --------------------------------------------------------------- */
+/*	-- in the event that your installation directory is NOT */
+/*	   /[apache_webroot]/seer_2/ , then you must do a "find and replace" */
+/*	   of all values in this file... specifically: */
+/*		REPLACE "seer_2" with "[your_directory]" */
+
+
+/* FONTS */
+/* --------------------------------------------------------------- */
+@font-face {
+	font-family: 'OpenSansRegular';
+	src: url('/seer_2/plugins/fonts/fontsquirrel_open-sans/OpenSans-Regular-webfont.eot');
+	src: url('/seer_2/plugins/fonts/fontsquirrel_open-sans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+		url('/seer_2/plugins/fonts/fontsquirrel_open-sans/OpenSans-Regular-webfont.woff') format('woff'),
+		url('/seer_2/plugins/fonts/fontsquirrel_open-sans/OpenSans-Regular-webfont.ttf') format('truetype'),
+		url('/seer_2/plugins/fonts/fontsquirrel_open-sans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+		font-weight: normal;
+		font-style: normal;
+}
+
+/* BODY AND FRAMEWORK */
+/* --------------------------------------------------------------- */
+BODY {
+	background: #dddddd;
+	text-align: center;
+	-webkit-font-smoothing: antialiased;
+	}
+
+#CONTAINER_SHELL {
+	display: block;
+	margin: 10px auto 10px auto;
+  	background-image: url('/seer_2/img/platter_seer_0.jpg');
+	text-align: center;
+	/* FIREFOX BUGFIX
+		-- this value should be overflow: hidden for the ideal display as intended.
+		-- however, there's a 2003 firefox bugreport that was never fixed, and 
+   		   persists to today, which will result in only one page of a report being
+		   printable, instead of all.
+		-- update 2011/02; now affects opera as of version 11.  Still does not affect
+		   msie or safari/konqueror.
+		-- http://support.mozilla.com/en-US/questions/667285
+	*/
+	overflow: visible;
+	}
+
+#CONTAINER {
+	display: block;
+	margin: 10px 10px 10px 10px;
+	background: #ffffff;
+	text-align: left;
+	/* FIREFOX BUGFIX
+		-- this value should be overflow: hidden for the ideal display as intended.
+		-- however, there's a 2003 firefox bugreport that was never fixed, and 
+   		   persists to today, which will result in only one page of a report being
+		   printable, instead of all.
+		-- update 2011/02; now affects opera as of version 11.  Still does not affect
+		   msie or safari/konqueror.
+		-- http://support.mozilla.com/en-US/questions/667285
+	*/
+	overflow: visible;
+	}
+
+/* DIVISIONS SUB-CONTAINERS */
+/* --------------------------------------------------------------- */
+
+DIV.INFOREPORT {
+	display: block;
+	margin-left: 215px;
+	margin-right: 215px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	text-align: left;
+	}
+
+DIV.USERREPORT {
+	display: block;
+	margin-left: 15px;
+	margin-right: 15px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	text-align: left;
+	}
+
+dt, dl, dd, ul, li {
+	list-style-type: none;
+	margin: 0 0 0 0;
+	padding: 0;
+	}
+
+/* HYPERLINKS */
+/* --------------------------------------------------------------- */
+A:link  {
+	text-decoration: none;	
+	color: #4a83ae; 
+	background-color: inherit;
+	}
+A:visited {
+	text-decoration: none;	
+	color: #4a83ae; 
+	background-color: inherit;
+	}
+A:active {
+	text-decoration: none;	
+	color: #4a83ae; 
+	background-color: inherit;
+	}
+A:hover {
+	text-decoration: none;	
+	color: #33BB00; 
+	background-color: inherit;
+	}
+
+/* INPUT AND SELECTION FOR FORMS AND SUCH */
+/* -- BOTH UPPER AND LOWERCASE ARE USED TO COVER 3rd PARTY */
+/*    UTILITIES MODIFIED TO WORK WITH SEER */
+/* --------------------------------------------------------------- */
+SELECT {
+	font-family: helvectica, arial, sans-serif;
+	font-size: 10px;
+	color: #555555;
+	}
+
+INPUT {
+	font-family: helvectica, arial, sans-serif;
+	font-size: 10px;
+	color: #555555;
+	}
+
+select {
+	font-family: helvectica, arial, sans-serif;
+	font-size: 10px;
+	color: #555555;
+	}
+
+select.SMALL {
+	font-family: helvectica, arial, sans-serif;
+	font-size: 9px;
+	color: #555555;
+	}
+
+input {
+	font-family: helvectica, arial, sans-serif;
+	font-size: 10px;
+	color: #555555;
+	}
+
+/* IMAGES */
+/* --------------------------------------------------------------- */
+img.ABSOLUTEPLACEMENT {
+	margin: 0px;
+	border: 0px;
+	padding: 0px;
+}
+
+/* TABLES */
+/* --------------------------------------------------------------- */
+table.PSUEDOCONTAINER td, tr, table {
+	overflow: hidden;
+	table-layout: fixed;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+table.MENU td {
+	table-layout: fixed;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+table.STANDARD tr, table {
+	overflow: hidden;
+	table-layout: fixed;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+table.STANDARD td {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 8pt;
+	overflow: hidden;
+	table-layout: fixed;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+table.STANDARD td.onesizeup {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 9pt;
+	overflow: hidden;
+	table-layout: fixed;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+table.STANDARD td.twosizeup {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 10pt;
+	overflow: hidden;
+	table-layout: fixed;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+table.STANDARD td.reportticketlabel {
+	text-align: center;
+	font-family: helvectica, arial, sans-serif;
+	color: #000000;
+	font-size: 11pt;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+table.STANDARD td.nowrap {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 8pt;
+	overflow: hidden;
+	table-layout: fixed;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	white-space: nowrap;
+	}
+
+table.STANDARD_2 td, tr, table {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 8pt;
+	overflow: hidden;
+	table-layout: fixed;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+table.SMALL td {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 7pt;
+	overflow: hidden;
+	table-layout: fixed;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+table.VERYSMALL td {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 6pt;
+	overflow: hidden;
+	table-layout: fixed;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+/* SPECIFIC TABLE ROWS */
+/* --------------------------------------------------------------- */
+tr.hmirowborder1_ALT { 
+	text-align: center;
+	border-width: 2px; 
+	border-style: outset;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	background-color: #C4E4FD;
+	}
+
+tr.hmirowborder1_ALT_NOBORDER { 
+	text-align: center;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	background-color: #C4E4FD;
+	}
+
+
+/* SPECIFIC TABLE CELLS */
+/* --------------------------------------------------------------- */
+td.hmicellborder1 { 
+	text-align: center;
+	border-width: 2px; 
+	border-style: outset;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+td.hmicellborder1_ALT { 
+	text-align: center;
+	border-width: 2px; 
+	border-style: outset;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	background-color: #C4E4FD;
+	}
+
+td.hmicellborder1_ALT_L { 
+	text-align: left;
+	border-width: 2px;
+	border-style: outset;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	background-color: #C4E4FD;
+	}
+
+td.hmicellborder1_ALT_ALARM { 
+	text-align: center;
+	border-width: 2px; 
+	border-style: outset;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	background-color: #FF8866;
+	}
+
+td.hmicellborder1_ALT_ALARM_L { 
+	text-align: left;
+	border-width: 2px; 
+	border-style: outset;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	background-color: #FF8866;
+	}
+
+td.hmicellborder2 { 
+	text-align: left;
+	border-left-width: 1px; 
+	border-right-width: 1px;
+	border-left-style: solid;
+	border-right-style: solid;
+	background-color: #DDDDDD;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+td.hmicellborder2nowrap { 
+	text-align: left;
+	border-left-width: 1px; 
+	border-right-width: 1px;
+	border-left-style: solid;
+	border-right-style: solid;
+	background-color: #DDDDDD;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	white-space: nowrap;
+	}
+
+td.hmicellborder2top { 
+	text-align: left;
+	border-left-width: 1px; 
+	border-right-width: 1px;
+	border-top-width: 1px;
+	border-left-style: solid;
+	border-right-style: solid;
+	border-top-style: solid;
+	background-color: #DDDDDD;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+td.hmicellborder2bottom { 
+	text-align: left;
+	border-left-width: 1px; 
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	border-left-style: solid;
+	border-right-style: solid;
+	border-bottom-style: solid;
+	background-color: #DDDDDD;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+td.hmicellborder2full { 
+	text-align: left;
+	border-width: 1px; 
+	border-style: solid;
+	background-color: #DDDDDD;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+
+/* UNIQUE TO TANKMODEL REPORT 1 */
+/* -- a green bar is placed at the critical temperature where bacteria can form */
+/* -- this is based upon a zero to 180 deg F chart scale... obviously you should */
+/*    adjust this to suit your needs (you'll have to edit the image or make an image file */
+/* --------------------------------------------------------------- */
+td.hmicellborder3 {
+	border-left-width: 1px; 
+	border-right-width: 1px;
+	border-left-style: solid;
+	border-right-style: solid;
+	background-color: #FFFFFF;
+ 	background-image: url('/seer_2/img/horizontal_bar_hatch_375px.png');
+	background-repeat: no-repeat;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+td.hmicellborder4 { 
+	text-align: left;
+	border-width: 1px; 
+	border-style: solid;
+	background-color: #DDDDDD;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+/* UNIQUE TO CIPMODEL REPORT 1 */
+/* -- a green bar is placed at the cip minimum desired temperature of 135 deg F*/
+/* -- this is based upon a 0 to 200 deg F chart scale... obviously you should */
+/*    adjust this to suit your needs (you'll have to edit the image or make an image file */
+/* --------------------------------------------------------------- */
+td.hmicellborder5 {
+	border-left-width: 1px; 
+	border-right-width: 1px;
+	border-left-style: solid;
+	border-right-style: solid;
+	background-color: #FFFFFF;
+ 	background-image: url('/seer_2/img/horizontal_bar_hatch_325px_135F.png');
+	background-repeat: no-repeat;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+td.hmicellborder9 { 
+	text-align: center;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+/* UNIQUE TO WARRIOR */
+/* --------------------------------------------------------------- */
+td.hmicellborder10 { 
+	text-align: center;
+	vertical-align: middle;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-color: #ECE5B6;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+td.hmicellborder11 { 
+	text-align: center;
+	vertical-align: middle;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	background-color:  #C4E4FD;
+	overflow: hidden;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	}
+
+/* PARAGRAPHS */
+/* --------------------------------------------------------------- */
+P.DAEMONREPORT {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 9pt;
+	text-align: left;
+	}
+
+P.STANDARDTABLETEXTSIZE {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 8pt;
+	padding-left: 5px;
+	}
+
+P.REPORTTICKETLABELTEXTSIZE {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 11pt;
+	padding-left: 5px;
+	}
+
+P.INFOREPORT {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 9pt;
+	text-align: left;
+	}
+
+P.INFOREPORTSMALL {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 7pt;
+	text-align: left;
+	}
+
+P.INFOREPORTRIGHT {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 9pt;
+	text-align: right;
+	}
+
+P.INFOREPORTRIGHTSMALL {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 7pt;
+	text-align: right;
+	}
+
+P.INFOREPORTCENTER {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 9pt;
+	text-align: center;
+	}
+
+P.INFOREPORTMEDTEXT {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 10pt;;
+	}
+
+P.INFOREPORTBIGTEXT {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 11pt;
+	font-weight: bold;
+	text-align: left;
+	}
+
+P.BANNER {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 9pt;
+	text-align: center;
+	white-space: nowrap;
+	}
+
+P.USERSTATUS {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 10pt;
+	margin-right: 30px;
+	margin-left: 30px;
+	text-align: right;
+	}
+
+P.USERSTATUS_SMALL {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 8pt;
+	margin-right: 30px;
+	margin-left: 30px;
+	text-align: right;
+	}
+
+
+P.DST_WARNING {
+	font-family: helvectica, arial, sans-serif;
+	color: #E42217;
+	font-weight: bold;
+	font-size: 8pt;
+	margin-right: 30px;
+	margin-left: 30px;
+	text-align: right;
+	}
+
+P.PAGETITLE {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 12pt;
+	text-align: center;
+	}
+
+P.FOOTER1 {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 8pt;
+	margin-right: 30px;
+	margin-left: 30px;
+	text-align: right;
+	}
+
+P.FOOTER2 {
+	font-family: helvectica, arial, sans-serif;
+	color: #555555;
+	font-size: 8pt;
+	text-align: center;
+	}
+
+/* END OF FILE */
+/* --------------------------------------------------------------- */
+
